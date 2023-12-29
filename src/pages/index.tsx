@@ -130,9 +130,9 @@ export default function Home() {
             <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
               Add Click Track
             </button>
-            <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
+            {/* <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
               Upload Track
-            </button>
+            </button> */}
           </div>
           <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
             Build Ableton Set
@@ -264,17 +264,17 @@ function FileDropzone({
 
   return (
     <div
-      className={`flex items-center justify-center bg-transparent h-64 w-full py-5`}
+      className={`cursor-pointer flex items-center justify-center bg-transparent h-64 w-full py-5`}
       {...getRootProps()}
     >
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p className={`font-semibold text-xl text-center`}>
+        <p className={`cursor-pointer font-semibold text-xl text-center`}>
           Drop MultiTrack Folder Here...
         </p>
       ) : (
-        <p className={`font-semibold text-xl text-center`}>
-          Drag MultiTrack Folder Here
+        <p className={`cursor-pointer font-semibold text-xl text-center`}>
+          Drag MultiTrack Folder Here or Click to Upload
         </p>
       )}
     </div>

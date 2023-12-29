@@ -1,3 +1,5 @@
+import path from "path";
+
 export const timeStringToFloat = (time: any) => {
   const minutesSeconds = time.split(/[.:]/);
   const minutes = parseInt(minutesSeconds[0], 10);

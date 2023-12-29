@@ -68,8 +68,6 @@ export default function Home() {
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
 
-  console.log(songOrder);
-
   function handleOnDragEnd(result: any) {
     if (!result.destination) return;
 
@@ -99,80 +97,72 @@ export default function Home() {
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
-                  {songs.map(
-                    (
-                      {
-                        id,
-                        name,
-                        thumb,
-                        bpm,
-                        timeSignature,
-                        hasTrack,
-                        key,
-                        duration,
-                      },
-                      index
-                    ) => {
-                      return (
-                        <Draggable key={id} draggableId={id} index={index}>
-                          {(provided) => (
-                            <li
-                              className={`relative flex items-center bg-white p-2 border-2 border-gray-200 rounded`}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              <div className="h-32 w-32 mr-4 shrink-0">
-                                <img
-                                  className={`w-full h-auto`}
-                                  src={thumb}
-                                  alt={`${name} Thumb`}
-                                />
-                              </div>
-                              <div className={"flex flex-col gap-2"}>
-                                <p className={`text-md font-bold text-black`}>
-                                  {name}
-                                </p>
-                                <div
-                                  className={
-                                    "flex flex-col gap-1 justify-content-center"
-                                  }
-                                >
-                                  <p
-                                    className={`text-xs font-semibold text-gray-500`}
-                                  >
-                                    Key: {key}
-                                  </p>
-                                  <p
-                                    className={`text-xs font-semibold text-gray-500`}
-                                  >
-                                    BPM: {bpm}
-                                  </p>
-                                  <p
-                                    className={`text-xs font-semibold text-gray-500`}
-                                  >
-                                    Time Sig: {timeSignature}
-                                  </p>
-                                  <p
-                                    className={`text-xs font-semibold text-gray-500`}
-                                  >
-                                    Duration: {duration}
-                                  </p>
-                                </div>
-                              </div>
-                              {/* Edit button */}
-                              <button
-                                className="absolute top-0 right-0 p-2 mr-2 text-gray-500 hover:text-gray-700"
-                                onClick={() => console.log(`edit ${name}`)}
+                  {songOrder.map((song, index) => {
+                    console.log(song);
+                    return (
+                      <Draggable
+                        key={song.id}
+                        draggableId={song.id}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <li
+                            className={`relative flex items-center bg-white p-2 border-2 border-gray-200 rounded`}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <div className="h-32 w-32 mr-4 shrink-0">
+                              <img
+                                className={`w-full h-auto`}
+                                src={song.thumb}
+                                alt={`${name} Thumb`}
+                              />
+                            </div>
+                            <div className={"flex flex-col gap-2"}>
+                              <p className={`text-md font-bold text-black`}>
+                                {song.name}
+                              </p>
+                              <div
+                                className={
+                                  "flex flex-col gap-1 justify-content-center"
+                                }
                               >
-                                Edit
-                              </button>
-                            </li>
-                          )}
-                        </Draggable>
-                      );
-                    }
-                  )}
+                                <p
+                                  className={`text-xs font-semibold text-gray-500`}
+                                >
+                                  Key: {song.key}
+                                </p>
+                                <p
+                                  className={`text-xs font-semibold text-gray-500`}
+                                >
+                                  BPM: {song.bpm}
+                                </p>
+                                <p
+                                  className={`text-xs font-semibold text-gray-500`}
+                                >
+                                  Time Sig:{" "}
+                                  {`${song.time_signature_top} / ${song.time_signature_bottom}`}
+                                </p>
+                                <p
+                                  className={`text-xs font-semibold text-gray-500`}
+                                >
+                                  Duration: {song.duration}
+                                </p>
+                              </div>
+                            </div>
+                            {/* Edit button */}
+                            <button
+                              className="absolute top-0 right-0 p-2 mr-2 text-gray-500 hover:text-gray-700"
+                              onClick={() => console.log(`edit ${name}`)}
+                            >
+                              Edit
+                            </button>
+                          </li>
+                        )}
+                      </Draggable>
+                    );
+                  })}
                   {provided.placeholder}
                 </ul>
               )}
@@ -214,16 +204,13 @@ function FileDropzone({
   setAudioClips,
 }: any) {
   const onDrop = useCallback(
-    (acceptedFiles) => {
+    (acceptedFiles: any) => {
       // Do something with the files
       const result = acceptedFiles.filter((obj: any) => {
         return obj.name.toLowerCase().indexOf("guide") !== -1;
       });
       let name = result[0].path;
       const songName = name.split("/")[1];
-
-      console.log(songName);
-
       const getTrackInfo = async (file: any) => {
         try {
           const formData = new FormData();
@@ -239,8 +226,7 @@ function FileDropzone({
           }
 
           const trackInfoRes = await response.json();
-          console.log(trackInfoRes);
-          return trackInfoRes?.data;
+          return trackInfoRes;
         } catch (e) {
           return console.log(e);
         }
@@ -248,54 +234,65 @@ function FileDropzone({
       // separate
       let clips: any = [];
       let trax: any = [];
-      for (var i = 0; i < acceptedFiles.length; i++) {
+      const promises = acceptedFiles.map(async (file: any) => {
         if (
-          acceptedFiles[i].path.toLowerCase().includes("/multitracks/") &&
-          acceptedFiles[i].name.toLowerCase().indexOf("click") === -1 &&
-          acceptedFiles[i].name.toLowerCase().indexOf("asd") === -1
+          file.path.toLowerCase().includes("/multitracks/") &&
+          file.name.toLowerCase().indexOf("click") === -1 &&
+          file.name.toLowerCase().indexOf("asd") === -1
         ) {
-          const clipItems = Array.from(audioClips);
-          clipItems.push(acceptedFiles[i]);
+          const clipItems = [...audioClips, file];
           setAudioClips(clipItems);
 
           clips.push({
-            name: acceptedFiles[i].name,
-            path: acceptedFiles[i].path,
+            name: file.name,
+            path: file.path,
           });
 
-          trax.push(acceptedFiles[i]);
+          trax.push(file);
         }
 
         // test img upload
-        if (acceptedFiles[i].path.toLowerCase().includes("jpg")) {
-          console.log(acceptedFiles[i]);
+        if (file.path.toLowerCase().includes("jpg")) {
+          console.log(file);
         }
 
-        if (acceptedFiles[i].name.toLowerCase().indexOf(".als") !== -1) {
-          getTrackInfo(acceptedFiles[i]).then((res: any) => {
-            let songName = acceptedFiles[0].path;
+        if (file.name.toLowerCase().indexOf(".als") !== -1) {
+          try {
+            const res = await getTrackInfo(file);
+
+            let songName = file.path;
             const songNameParsed = songName.split("/")[1].split("-")[0];
 
-            const items = Array.from(songOrder);
-            items.push({
-              // temp ID
-              id: (Date.now() + Math.random()).toString().replace(".", ""),
-              name: songNameParsed,
-              bpm: res?.bpm,
-              time_signature_top: res?.time_signature_top,
-              time_signature_bottom: res?.time_signature_bottom,
-              track: true,
-              key: "0",
-              duration: res?.duration,
-              clips: clips,
-            });
+            const items = [
+              ...songOrder,
+              {
+                id: (Date.now() + Math.random()).toString().replace(".", ""),
+                name: songNameParsed,
+                bpm: res?.bpm,
+                time_signature_top: res?.time_signature_top,
+                time_signature_bottom: res?.time_signature_bottom,
+                track: true,
+                key: "0",
+                duration: res?.duration,
+                clips: clips,
+              },
+            ];
 
-            if (res !== undefined) {
-              setSongOrder(items);
-            }
-          });
+            setSongOrder(items);
+          } catch (error) {
+            console.error(`Error processing file ${file.name}:`, error);
+          }
         }
-      }
+      });
+
+      Promise.all(promises)
+        .then(() => {
+          // All asynchronous operations completed
+          // You can perform any additional actions here if needed
+        })
+        .catch((error) => {
+          console.error("Error processing files:", error);
+        });
 
       const trackItems = Array.from(multiTracks);
       trackItems.push({ name: songName, clips: trax });

@@ -2,68 +2,7 @@ import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useDropzone } from "react-dropzone";
 
-const songList = [
-  {
-    id: "gary",
-    name: "Gary Goodspeed",
-    thumb:
-      "https://upload.wikimedia.org/wikipedia/en/a/a5/Graves_into_Gardens_by_Elevation_Worship_%28Official_Album_Cover%29.png",
-    bpm: 128,
-    timeSignature: "4/4",
-    hasTrack: false,
-    key: "A",
-    duration: "4:32",
-  },
-  {
-    id: "cato",
-    name: "Little Cato",
-    thumb:
-      "https://upload.wikimedia.org/wikipedia/en/a/a5/Graves_into_Gardens_by_Elevation_Worship_%28Official_Album_Cover%29.png",
-    bpm: 128,
-    timeSignature: "6/8",
-    hasTrack: true,
-    key: "A",
-    duration: "4:32",
-  },
-  {
-    id: "kvn",
-    name: "KVN",
-    thumb:
-      "https://upload.wikimedia.org/wikipedia/en/a/a5/Graves_into_Gardens_by_Elevation_Worship_%28Official_Album_Cover%29.png",
-    bpm: 128,
-    timeSignature: "3/4",
-    hasTrack: false,
-    key: "A",
-    duration: "4:32",
-  },
-  {
-    id: "mooncake",
-    name: "Mooncake",
-    thumb:
-      "https://upload.wikimedia.org/wikipedia/en/a/a5/Graves_into_Gardens_by_Elevation_Worship_%28Official_Album_Cover%29.png",
-    bpm: 128,
-    timeSignature: "4/4",
-    hasTrack: false,
-    key: "A",
-    duration: "4:32",
-  },
-  {
-    id: "quinn",
-    name: "Quinn Ergon",
-    thumb:
-      "https://upload.wikimedia.org/wikipedia/en/a/a5/Graves_into_Gardens_by_Elevation_Worship_%28Official_Album_Cover%29.png",
-    bpm: 128,
-    timeSignature: "4/4",
-    hasTrack: true,
-    key: "A",
-    duration: "4:32",
-  },
-];
-
 export default function Home() {
-  // remove soon
-  const [songs, updateSongs] = useState(songList);
-
   const [songOrder, setSongOrder] = useState<any[]>([]);
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
@@ -71,11 +10,11 @@ export default function Home() {
   function handleOnDragEnd(result: any) {
     if (!result.destination) return;
 
-    const items = Array.from(songs);
+    const items = Array.from(songOrder);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    updateSongs(items);
+    setSongOrder(items);
   }
 
   return (
@@ -98,7 +37,6 @@ export default function Home() {
                   ref={provided.innerRef}
                 >
                   {songOrder.map((song, index) => {
-                    console.log(song);
                     return (
                       <Draggable
                         key={song.id}
@@ -115,7 +53,7 @@ export default function Home() {
                             <div className="h-32 w-32 mr-4 shrink-0">
                               <img
                                 className={`w-full h-auto`}
-                                src={song.thumb}
+                                src={song.img}
                                 alt={`${name} Thumb`}
                               />
                             </div>
@@ -234,6 +172,7 @@ function FileDropzone({
       // separate
       let clips: any = [];
       let trax: any = [];
+      let coverImgSrc: any;
       const promises = acceptedFiles.map(async (file: any) => {
         if (
           file.path.toLowerCase().includes("/multitracks/") &&
@@ -251,9 +190,14 @@ function FileDropzone({
           trax.push(file);
         }
 
-        // test img upload
+        // handle img
         if (file.path.toLowerCase().includes("jpg")) {
-          console.log(file);
+          // Create a data URL for the image
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            coverImgSrc = e?.target?.result;
+          };
+          reader.readAsDataURL(file);
         }
 
         if (file.name.toLowerCase().indexOf(".als") !== -1) {
@@ -275,6 +219,7 @@ function FileDropzone({
                 key: "0",
                 duration: res?.duration,
                 clips: clips,
+                img: coverImgSrc,
               },
             ];
 

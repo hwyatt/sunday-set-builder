@@ -61,7 +61,14 @@ const songList = [
 ];
 
 export default function Home() {
+  // remove soon
   const [songs, updateSongs] = useState(songList);
+
+  const [songOrder, setSongOrder] = useState<any[]>([]);
+  const [multiTracks, setMultiTracks] = useState<any[]>([]);
+  const [audioClips, setAudioClips] = useState<any[]>([]);
+
+  console.log(songOrder);
 
   function handleOnDragEnd(result: any) {
     if (!result.destination) return;
@@ -185,17 +192,122 @@ export default function Home() {
             Build Ableton Set
           </button>
         </div>
-        <FileDropzone />
+        <FileDropzone
+          songOrder={songOrder}
+          setSongOrder={setSongOrder}
+          multiTracks={multiTracks}
+          setMultiTracks={setMultiTracks}
+          audioClips={audioClips}
+          setAudioClips={setAudioClips}
+        />
       </div>
     </div>
   );
 }
 
-function FileDropzone() {
-  const onDrop = useCallback((acceptedFiles) => {
-    // Do something with the files
-    console.log(acceptedFiles);
-  }, []);
+function FileDropzone({
+  songOrder,
+  setSongOrder,
+  multiTracks,
+  setMultiTracks,
+  audioClips,
+  setAudioClips,
+}: any) {
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      // Do something with the files
+      const result = acceptedFiles.filter((obj: any) => {
+        return obj.name.toLowerCase().indexOf("guide") !== -1;
+      });
+      let name = result[0].path;
+      const songName = name.split("/")[1];
+
+      console.log(songName);
+
+      const getTrackInfo = async (file: any) => {
+        try {
+          const formData = new FormData();
+          formData.append("session", file);
+
+          const response = await fetch("http://localhost:8080/song", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to upload file");
+          }
+
+          const trackInfoRes = await response.json();
+          console.log(trackInfoRes);
+          return trackInfoRes?.data;
+        } catch (e) {
+          return console.log(e);
+        }
+      };
+      // separate
+      let clips: any = [];
+      let trax: any = [];
+      for (var i = 0; i < acceptedFiles.length; i++) {
+        if (
+          acceptedFiles[i].path.toLowerCase().includes("/multitracks/") &&
+          acceptedFiles[i].name.toLowerCase().indexOf("click") === -1 &&
+          acceptedFiles[i].name.toLowerCase().indexOf("asd") === -1
+        ) {
+          const clipItems = Array.from(audioClips);
+          clipItems.push(acceptedFiles[i]);
+          setAudioClips(clipItems);
+
+          clips.push({
+            name: acceptedFiles[i].name,
+            path: acceptedFiles[i].path,
+          });
+
+          trax.push(acceptedFiles[i]);
+        }
+
+        // test img upload
+        if (acceptedFiles[i].path.toLowerCase().includes("jpg")) {
+          console.log(acceptedFiles[i]);
+        }
+
+        if (acceptedFiles[i].name.toLowerCase().indexOf(".als") !== -1) {
+          getTrackInfo(acceptedFiles[i]).then((res: any) => {
+            let songName = acceptedFiles[0].path;
+            const songNameParsed = songName.split("/")[1].split("-")[0];
+
+            const items = Array.from(songOrder);
+            items.push({
+              // temp ID
+              id: (Date.now() + Math.random()).toString().replace(".", ""),
+              name: songNameParsed,
+              bpm: res?.bpm,
+              time_signature_top: res?.time_signature_top,
+              time_signature_bottom: res?.time_signature_bottom,
+              track: true,
+              key: "0",
+              duration: res?.duration,
+              clips: clips,
+            });
+
+            if (res !== undefined) {
+              setSongOrder(items);
+            }
+          });
+        }
+      }
+
+      const trackItems = Array.from(multiTracks);
+      trackItems.push({ name: songName, clips: trax });
+      setMultiTracks(trackItems);
+
+      if (acceptedFiles.length <= 1) {
+        window.alert("Please upload the folder containing all the files");
+      } else {
+      }
+    },
+    [songOrder, multiTracks, audioClips]
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (

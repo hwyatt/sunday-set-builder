@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useDropzone } from "react-dropzone";
 
 const songList = [
   {
@@ -184,7 +185,27 @@ export default function Home() {
             Build Ableton Set
           </button>
         </div>
+        <FileDropzone />
       </div>
+    </div>
+  );
+}
+
+function FileDropzone() {
+  const onDrop = useCallback((acceptedFiles) => {
+    // Do something with the files
+    console.log(acceptedFiles);
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  return (
+    <div className={`bg-gray-200 h-32 w-full`} {...getRootProps()}>
+      <input {...getInputProps()} />
+      {isDragActive ? (
+        <p>Drop the files here ...</p>
+      ) : (
+        <p>Drag 'n' drop some files here, or click to select files</p>
+      )}
     </div>
   );
 }

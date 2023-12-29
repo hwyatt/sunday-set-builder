@@ -116,6 +116,14 @@ export default function Home() {
               )}
             </Droppable>
           </DragDropContext>
+          <FileDropzone
+            songOrder={songOrder}
+            setSongOrder={setSongOrder}
+            multiTracks={multiTracks}
+            setMultiTracks={setMultiTracks}
+            audioClips={audioClips}
+            setAudioClips={setAudioClips}
+          />
         </div>
         <div className={"flex justify-between gap-4 pt-5"}>
           <div className={"flex gap-4"}>
@@ -130,14 +138,6 @@ export default function Home() {
             Build Ableton Set
           </button>
         </div>
-        <FileDropzone
-          songOrder={songOrder}
-          setSongOrder={setSongOrder}
-          multiTracks={multiTracks}
-          setMultiTracks={setMultiTracks}
-          audioClips={audioClips}
-          setAudioClips={setAudioClips}
-        />
       </div>
     </div>
   );
@@ -263,12 +263,19 @@ function FileDropzone({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
-    <div className={`bg-gray-200 h-32 w-full`} {...getRootProps()}>
+    <div
+      className={`flex items-center justify-center bg-transparent h-64 w-full py-5`}
+      {...getRootProps()}
+    >
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p>Drop the files here ...</p>
+        <p className={`font-semibold text-xl text-center`}>
+          Drop MultiTrack Folder Here...
+        </p>
       ) : (
-        <p>Drag 'n' drop some files here, or click to select files</p>
+        <p className={`font-semibold text-xl text-center`}>
+          Drag MultiTrack Folder Here
+        </p>
       )}
     </div>
   );

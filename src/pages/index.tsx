@@ -90,12 +90,22 @@ export default function Home() {
                               </div>
                             </div>
                             {/* Edit button */}
-                            <button
-                              className="absolute top-0 right-0 p-2 mr-2 text-gray-500 hover:text-gray-700"
-                              onClick={() => console.log(`edit ${name}`)}
-                            >
-                              Edit
-                            </button>
+                            <div className={"absolute top-0 right-0 p-2"}>
+                              <button
+                                className="pr-2 mr-2 text-gray-500 hover:text-gray-700"
+                                onClick={() => console.log(`edit ${song.name}`)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="mr-2 text-gray-500 hover:text-gray-700"
+                                onClick={() =>
+                                  console.log(`delete ${song.name}`)
+                                }
+                              >
+                                X
+                              </button>
+                            </div>
                           </li>
                         )}
                       </Draggable>

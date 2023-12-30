@@ -12,7 +12,7 @@ const AddClickTrackModal = ({ onClose, onAddClickTrack }: any) => {
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-8 w-96 rounded-md">
-        <h2 className="text-2xl text-black font-semibold mb-4">
+        <h2 className="text-2xl text-gray-600 font-semibold mb-5">
           Add Click Track
         </h2>
         <label htmlFor="trackName" className="block text-gray-700">
@@ -27,13 +27,13 @@ const AddClickTrackModal = ({ onClose, onAddClickTrack }: any) => {
         />
         <div className="flex justify-end">
           <button
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 mr-2 rounded"
+            className="bg-gray-200 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 mr-2 rounded"
             onClick={onClose}
           >
             Cancel
           </button>
           <button
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
             onClick={handleAddClickTrack}
           >
             Add Track

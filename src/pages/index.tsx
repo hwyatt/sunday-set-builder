@@ -54,31 +54,32 @@ export default function Home() {
   }
 
   const postBuildSet = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("json", JSON.stringify(songOrder));
+    console.log("handle build set");
+    // try {
+    //   const formData = new FormData();
+    //   formData.append("json", JSON.stringify(songOrder));
 
-      for (let i = 0; i < multiTracks.length; i++) {
-        for (let j = 0; j < multiTracks[i].clips.length; j++) {
-          formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
-        }
-      }
+    //   for (let i = 0; i < multiTracks.length; i++) {
+    //     for (let j = 0; j < multiTracks[i].clips.length; j++) {
+    //       formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
+    //     }
+    //   }
 
-      const response = await fetch("http://localhost:8080/set", {
-        method: "POST",
-        body: formData,
-      }).then((res) => {
-        // TODO: NOT WORKING
-        const setId = res.data.id;
-        window.open(`http://localhost:8080/download?id=${setId}`);
-      });
+    //   const response = await fetch("http://localhost:8080/set", {
+    //     method: "POST",
+    //     body: formData,
+    //   }).then((res) => {
+    //     // TODO: NOT WORKING
+    //     const setId = res.data.id;
+    //     window.open(`http://localhost:8080/download?id=${setId}`);
+    //   });
 
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
-      }
-    } catch (e) {
-      return console.log(e);
-    }
+    //   if (!response.ok) {
+    //     throw new Error("Failed to upload file");
+    //   }
+    // } catch (e) {
+    //   return console.log(e);
+    // }
   };
 
   return (

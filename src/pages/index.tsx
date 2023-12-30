@@ -1,3 +1,4 @@
+import AddClickTrackModal from "@/components/AddClickTrackModal";
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useDropzone } from "react-dropzone";
@@ -6,6 +7,41 @@ export default function Home() {
   const [songOrder, setSongOrder] = useState<any[]>([]);
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
+
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const openModal = () => {
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleAddClickTrack = (trackName: any) => {
+    const items = Array.from(songOrder);
+    // const timeTop = clickTime === "4/4" ? "4" : "6";
+    // const timeBottom = clickTime === "4/4" ? "4" : "8";
+    // const duration = timeTop === "4" ? "4" : "3";
+    items.push({
+      name: "Test Click",
+      bpm: "200",
+      time_signature_top: "4",
+      time_signature_bottom: "4",
+      // name: clickName,
+      // bpm: clickBPM,
+      // time_signature_top: timeTop,
+      // time_signature_bottom: timeBottom,
+      track: false,
+      key: "0",
+      duration: "0:00",
+      clips: [],
+      img: "/metronome.png",
+    });
+    setSongOrder(items);
+  };
+
+  console.log(songOrder);
 
   function handleOnDragEnd(result: any) {
     if (!result.destination) return;
@@ -16,6 +52,34 @@ export default function Home() {
 
     setSongOrder(items);
   }
+
+  const postBuildSet = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("json", JSON.stringify(songOrder));
+
+      for (let i = 0; i < multiTracks.length; i++) {
+        for (let j = 0; j < multiTracks[i].clips.length; j++) {
+          formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
+        }
+      }
+
+      const response = await fetch("http://localhost:8080/set", {
+        method: "POST",
+        body: formData,
+      }).then((res) => {
+        // TODO: NOT WORKING
+        const setId = res.data.id;
+        window.open(`http://localhost:8080/download?id=${setId}`);
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+    } catch (e) {
+      return console.log(e);
+    }
+  };
 
   return (
     <div className="bg-gray-600 h-screen p-5">
@@ -92,13 +156,13 @@ export default function Home() {
                             {/* Edit button */}
                             <div className={"absolute top-0 right-0 p-2"}>
                               <button
-                                className="pr-2 mr-2 text-gray-500 hover:text-gray-700"
+                                className="font-bold pr-2 mr-2 text-gray-600 hover:text-gray-800"
                                 onClick={() => console.log(`edit ${song.name}`)}
                               >
                                 Edit
                               </button>
                               <button
-                                className="mr-2 text-gray-500 hover:text-gray-700"
+                                className="font-bold mr-2 text-gray-600 hover:text-gray-800"
                                 onClick={() =>
                                   console.log(`delete ${song.name}`)
                                 }
@@ -127,17 +191,33 @@ export default function Home() {
         </div>
         <div className={"flex justify-between gap-4 pt-5"}>
           <div className={"flex gap-4"}>
-            <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
+            <button
+              className={"bg-white text-gray-800 font-bold px-4 py-3"}
+              onClick={openModal}
+            >
               Add Click Track
             </button>
             {/* <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
               Upload Track
             </button> */}
           </div>
-          <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
+          <button
+            disabled={songOrder.length <= 0}
+            className={
+              "disabled:bg-gray-400 bg-white text-gray-800 font-bold px-4 py-3"
+            }
+            onClick={postBuildSet}
+          >
             Build Ableton Set
           </button>
         </div>
+        {/* Render the modal if isModalOpen is true */}
+        {isModalOpen && (
+          <AddClickTrackModal
+            onClose={closeModal}
+            onAddClickTrack={handleAddClickTrack}
+          />
+        )}
       </div>
     </div>
   );

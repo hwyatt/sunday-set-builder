@@ -8,6 +8,10 @@ export default function Home() {
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
 
+  const [clickName, setClickName] = useState<string | null>(null);
+  const [clickBPM, setClickBPM] = useState<string | null>(null);
+  const [clickTime, setClickTime] = useState<string | null>(null);
+
   const [isModalOpen, setModalOpen] = useState(false);
 
   const openModal = () => {
@@ -18,30 +22,30 @@ export default function Home() {
     setModalOpen(false);
   };
 
-  const handleAddClickTrack = (trackName: any) => {
+  const handleAddClickTrack = ({ clickName, clickBPM, clickTime }: any) => {
+    console.log(clickTime);
     const items = Array.from(songOrder);
-    // const timeTop = clickTime === "4/4" ? "4" : "6";
-    // const timeBottom = clickTime === "4/4" ? "4" : "8";
-    // const duration = timeTop === "4" ? "4" : "3";
+    const timeTop = clickTime === "4/4" ? "4" : "6";
+    const timeBottom = clickTime === "4/4" ? "4" : "8";
+    const duration = timeTop === "4" ? "4" : "3";
     items.push({
-      name: "Test Click",
-      bpm: "200",
-      time_signature_top: "4",
-      time_signature_bottom: "4",
-      // name: clickName,
-      // bpm: clickBPM,
-      // time_signature_top: timeTop,
-      // time_signature_bottom: timeBottom,
+      // name: "Test Click",
+      // bpm: "200",
+      // time_signature_top: "4",
+      // time_signature_bottom: "4",
+      id: (Date.now() + Math.random()).toString().replace(".", ""),
+      name: clickName,
+      bpm: clickBPM,
+      time_signature_top: timeTop,
+      time_signature_bottom: timeBottom,
       track: false,
       key: "0",
-      duration: "0:00",
+      duration: "-",
       clips: [],
       img: "/metronome.png",
     });
     setSongOrder(items);
   };
-
-  console.log(songOrder);
 
   function handleOnDragEnd(result: any) {
     if (!result.destination) return;
@@ -54,32 +58,26 @@ export default function Home() {
   }
 
   const postBuildSet = async () => {
-    console.log("handle build set");
-    // try {
-    //   const formData = new FormData();
-    //   formData.append("json", JSON.stringify(songOrder));
+    try {
+      const formData = new FormData();
+      formData.append("json", JSON.stringify(songOrder));
 
-    //   for (let i = 0; i < multiTracks.length; i++) {
-    //     for (let j = 0; j < multiTracks[i].clips.length; j++) {
-    //       formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
-    //     }
-    //   }
+      for (let i = 0; i < multiTracks.length; i++) {
+        for (let j = 0; j < multiTracks[i].clips.length; j++) {
+          formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
+        }
+      }
 
-    //   const response = await fetch("http://localhost:8080/set", {
-    //     method: "POST",
-    //     body: formData,
-    //   }).then((res) => {
-    //     // TODO: NOT WORKING
-    //     const setId = res.data.id;
-    //     window.open(`http://localhost:8080/download?id=${setId}`);
-    //   });
+      const response = await fetch("http://localhost:8080/set", {
+        method: "POST",
+        body: formData,
+      });
 
-    //   if (!response.ok) {
-    //     throw new Error("Failed to upload file");
-    //   }
-    // } catch (e) {
-    //   return console.log(e);
-    // }
+      const setInfoRes = await response.json();
+      window.open(`http://localhost:8080/download?id=${setInfoRes.id}`);
+    } catch (e) {
+      return console.log(e);
+    }
   };
 
   return (

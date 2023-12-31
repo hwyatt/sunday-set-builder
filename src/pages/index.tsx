@@ -23,23 +23,18 @@ export default function Home() {
   };
 
   const handleAddClickTrack = ({ clickName, clickBPM, clickTime }: any) => {
-    console.log(clickTime);
     const items = Array.from(songOrder);
     const timeTop = clickTime === "4/4" ? "4" : "6";
     const timeBottom = clickTime === "4/4" ? "4" : "8";
     const duration = timeTop === "4" ? "4" : "3";
     items.push({
-      // name: "Test Click",
-      // bpm: "200",
-      // time_signature_top: "4",
-      // time_signature_bottom: "4",
       id: (Date.now() + Math.random()).toString().replace(".", ""),
       name: clickName,
       bpm: clickBPM,
       time_signature_top: timeTop,
       time_signature_bottom: timeBottom,
       track: false,
-      key: "0",
+      key: "-",
       duration: "-",
       clips: [],
       img: "/metronome.png",
@@ -81,7 +76,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-gray-600 h-screen p-5">
+    <div className="bg-gray-600 p-5 mb-5">
       <div style={{ maxWidth: "1280px" }} className="mx-auto">
         <div className={"pb-5 border-b"}>
           <header className="App-header">
@@ -232,11 +227,16 @@ function FileDropzone({
 }: any) {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
-      // Do something with the files
       const result = acceptedFiles.filter((obj: any) => {
         return obj.name.toLowerCase().indexOf("guide") !== -1;
       });
       let name = result[0].path;
+      let key: string = "";
+      try {
+        key = name.split("-")[2];
+      } catch (err) {
+        console.log("Could not get key from string: ", err);
+      }
       const songName = name.split("/")[1];
       const getTrackInfo = async (file: any) => {
         try {
@@ -305,7 +305,7 @@ function FileDropzone({
                 time_signature_top: res?.time_signature_top,
                 time_signature_bottom: res?.time_signature_bottom,
                 track: true,
-                key: "0",
+                key: key !== "" ? key : "0",
                 duration: res?.duration,
                 clips: clips,
                 img: coverImgSrc,
@@ -320,10 +320,7 @@ function FileDropzone({
       });
 
       Promise.all(promises)
-        .then(() => {
-          // All asynchronous operations completed
-          // You can perform any additional actions here if needed
-        })
+        .then(() => {})
         .catch((error) => {
           console.error("Error processing files:", error);
         });

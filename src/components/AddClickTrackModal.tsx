@@ -3,10 +3,9 @@ import React, { useState } from "react";
 const AddClickTrackModal = ({ onClose, onAddClickTrack }: any) => {
   const [clickName, setClickName] = useState<string>("");
   const [clickBPM, setClickBPM] = useState<string>("");
-  const [clickTime, setClickTime] = useState<string>("");
+  const [clickTime, setClickTime] = useState<string>("4/4");
 
   const handleAddClickTrack = () => {
-    // Perform any additional validation if needed
     onAddClickTrack({ clickName, clickBPM, clickTime });
     onClose();
   };
@@ -44,14 +43,14 @@ const AddClickTrackModal = ({ onClose, onAddClickTrack }: any) => {
         </label>
         <select
           id="songTime"
-          className="text-black w-full border p-2 mb-4"
-          defaultValue={"4/4"}
+          className="text-black w-full border p-2 mb-5"
+          value={clickTime}
           onChange={(e) => setClickTime(e.target.value)}
         >
           <option value="4/4">4/4</option>
           <option value="6/8">6/8</option>
         </select>
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-5">
           <button
             className="bg-gray-200 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 mr-2 rounded"
             onClick={onClose}

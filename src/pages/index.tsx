@@ -42,7 +42,7 @@ export default function Home() {
       time_signature_top: timeTop,
       time_signature_bottom: timeBottom,
       track: false,
-      key: "-",
+      key: "0",
       duration: duration,
       clips: [],
       img: "/metronome.png",
@@ -155,7 +155,10 @@ export default function Home() {
                                 <p
                                   className={`text-xs font-semibold text-gray-500`}
                                 >
-                                  Duration: {song.duration}
+                                  Duration:{" "}
+                                  {song.clips.length !== 0
+                                    ? song.duration
+                                    : `Click Loop`}
                                 </p>
                               </div>
                             </div>
@@ -247,9 +250,9 @@ function FileDropzone({
         return obj.name.toLowerCase().indexOf("guide") !== -1;
       });
       let name = result[0].path;
-      let key: string = "";
+      let displayKey: string = "";
       try {
-        key = name.split("-")[2];
+        displayKey = name.split("-")[2];
       } catch (err) {
         console.log("Could not get key from string: ", err);
       }
@@ -321,7 +324,7 @@ function FileDropzone({
                 time_signature_top: res?.time_signature_top,
                 time_signature_bottom: res?.time_signature_bottom,
                 track: true,
-                key: key !== "" ? key : "0",
+                key: "0",
                 duration: res?.duration,
                 clips: clips,
                 img: coverImgSrc,

@@ -5,9 +5,17 @@ const AddClickTrackModal = ({ onClose, onAddClickTrack }: any) => {
   const [clickBPM, setClickBPM] = useState<string>("");
   const [clickTime, setClickTime] = useState<string>("4/4");
 
+  const isFormValid = clickName && clickBPM && clickTime;
+
   const handleAddClickTrack = () => {
-    onAddClickTrack({ clickName, clickBPM, clickTime });
-    onClose();
+    if (isFormValid) {
+      onAddClickTrack({ clickName, clickBPM, clickTime });
+      onClose();
+    } else {
+      alert(
+        "Please include a Song Name, BPM, and ensure the correct Time Signature is selected."
+      );
+    }
   };
 
   return (

@@ -2,17 +2,16 @@ import AddClickTrackModal from "@/components/AddClickTrackModal";
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useDropzone } from "react-dropzone";
+import Image from "next/image";
+import DeleteSongModal from "@/components/DeleteSongModal";
 
 export default function Home() {
   const [songOrder, setSongOrder] = useState<any[]>([]);
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
 
-  const [clickName, setClickName] = useState<string | null>(null);
-  const [clickBPM, setClickBPM] = useState<string | null>(null);
-  const [clickTime, setClickTime] = useState<string | null>(null);
-
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const openModal = () => {
     setModalOpen(true);
@@ -22,11 +21,20 @@ export default function Home() {
     setModalOpen(false);
   };
 
+  const openDeleteModal = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+  };
+
   const handleAddClickTrack = ({ clickName, clickBPM, clickTime }: any) => {
     const items = Array.from(songOrder);
     const timeTop = clickTime === "4/4" ? "4" : "6";
     const timeBottom = clickTime === "4/4" ? "4" : "8";
     const duration = timeTop === "4" ? "4" : "3";
+
     items.push({
       id: (Date.now() + Math.random()).toString().replace(".", ""),
       name: clickName,
@@ -35,11 +43,15 @@ export default function Home() {
       time_signature_bottom: timeBottom,
       track: false,
       key: "-",
-      duration: "-",
+      duration: duration,
       clips: [],
       img: "/metronome.png",
     });
     setSongOrder(items);
+  };
+
+  const handleDeleteSong = () => {
+    console.log("deleting song: ");
   };
 
   function handleOnDragEnd(result: any) {
@@ -157,9 +169,7 @@ export default function Home() {
                               </button>
                               <button
                                 className="font-bold mr-2 text-gray-600 hover:text-gray-800"
-                                onClick={() =>
-                                  console.log(`delete ${song.name}`)
-                                }
+                                onClick={openDeleteModal}
                               >
                                 X
                               </button>
@@ -210,6 +220,12 @@ export default function Home() {
           <AddClickTrackModal
             onClose={closeModal}
             onAddClickTrack={handleAddClickTrack}
+          />
+        )}
+        {isDeleteModalOpen && (
+          <DeleteSongModal
+            onClose={closeDeleteModal}
+            onAddClickTrack={handleDeleteSong}
           />
         )}
       </div>
@@ -340,10 +356,16 @@ function FileDropzone({
 
   return (
     <div
-      className={`cursor-pointer flex items-center justify-center bg-transparent h-64 w-full py-5`}
+      className={`cursor-pointer flex flex-col items-center justify-center bg-transparent h-64 w-full py-5`}
       {...getRootProps()}
     >
       <input {...getInputProps()} />
+      <Image
+        src="/folder.png"
+        width={150}
+        height={150}
+        alt="Upload Tracks Icon"
+      />
       {isDragActive ? (
         <p className={`cursor-pointer font-semibold text-xl text-center`}>
           Drop MultiTrack Folder Here...

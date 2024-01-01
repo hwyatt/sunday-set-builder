@@ -4,6 +4,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import DeleteSongModal from "@/components/DeleteSongModal";
+import { MdEdit, MdDelete } from "react-icons/md";
 
 export default function Home() {
   const [songOrder, setSongOrder] = useState<any[]>([]);
@@ -13,6 +14,8 @@ export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
+  const [songToDeleteId, setSongToDeleteId] = useState("");
+
   const openModal = () => {
     setModalOpen(true);
   };
@@ -21,8 +24,9 @@ export default function Home() {
     setModalOpen(false);
   };
 
-  const openDeleteModal = () => {
+  const openDeleteModal = (id: string) => {
     setDeleteModalOpen(true);
+    setSongToDeleteId(id);
   };
 
   const closeDeleteModal = () => {
@@ -51,7 +55,10 @@ export default function Home() {
   };
 
   const handleDeleteSong = () => {
-    console.log("deleting song: ");
+    const updatedSongOrder = songOrder.filter(
+      (song) => song.id !== songToDeleteId
+    );
+    setSongOrder(updatedSongOrder);
   };
 
   function handleOnDragEnd(result: any) {
@@ -165,16 +172,16 @@ export default function Home() {
                             {/* Edit button */}
                             <div className={"absolute top-0 right-0 p-2"}>
                               <button
-                                className="font-bold pr-2 mr-2 text-gray-600 hover:text-gray-800"
+                                className="text-2xl font-bold mr-2 text-gray-600 hover:text-gray-800"
                                 onClick={() => console.log(`edit ${song.name}`)}
                               >
-                                Edit
+                                <MdEdit />
                               </button>
                               <button
-                                className="font-bold mr-2 text-gray-600 hover:text-gray-800"
-                                onClick={openDeleteModal}
+                                className="text-2xl font-bold text-gray-600 hover:text-gray-800"
+                                onClick={() => openDeleteModal(song.id)}
                               >
-                                X
+                                <MdDelete />
                               </button>
                             </div>
                           </li>
@@ -204,9 +211,6 @@ export default function Home() {
             >
               Add Click Track
             </button>
-            {/* <button className={"bg-white text-gray-800 font-bold px-4 py-3"}>
-              Upload Track
-            </button> */}
           </div>
           <button
             disabled={songOrder.length <= 0}
@@ -228,7 +232,7 @@ export default function Home() {
         {isDeleteModalOpen && (
           <DeleteSongModal
             onClose={closeDeleteModal}
-            onAddClickTrack={handleDeleteSong}
+            onDeleteSong={handleDeleteSong}
           />
         )}
       </div>

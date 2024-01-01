@@ -1,10 +1,8 @@
 import React from "react";
 
-const DeleteSongModal = ({ onClose, onDeleteSong }: any) => {
+const DeleteSongModal = ({ onClose, onDeleteSong, id }: any) => {
   const handleDeleteSong = () => {
-    console.log("delete from modal");
-    onDeleteSong();
-    // onDeleteSong();
+    onDeleteSong(id);
     onClose();
   };
 

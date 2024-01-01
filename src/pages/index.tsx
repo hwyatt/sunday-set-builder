@@ -5,8 +5,12 @@ import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import DeleteSongModal from "@/components/DeleteSongModal";
 import { MdEdit, MdDelete } from "react-icons/md";
+import LoadingOverlay from "react-loading-overlay-ts";
+import { Audio } from "react-loader-spinner";
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const [songOrder, setSongOrder] = useState<any[]>([]);
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
@@ -73,6 +77,7 @@ export default function Home() {
 
   const postBuildSet = async () => {
     try {
+      setIsLoading(true);
       const formData = new FormData();
       formData.append("json", JSON.stringify(songOrder));
 
@@ -91,152 +96,177 @@ export default function Home() {
       window.open(`http://localhost:8080/download?id=${setInfoRes.id}`);
     } catch (e) {
       return console.log(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-gray-600 p-5 mb-5">
-      <div style={{ maxWidth: "1280px" }} className="mx-auto">
-        <div className={"pb-5 border-b"}>
-          <header className="App-header">
-            <h1
-              className={`text-4xl font-semibold uppercase pb-3 mb-5 border-b`}
-            >
-              Sunday Set Builder
-            </h1>
-          </header>
-          <DragDropContext onDragEnd={handleOnDragEnd}>
-            <Droppable droppableId="songs">
-              {(provided) => (
-                <ul
-                  className="flex flex-col gap-4 list-none"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {songOrder.map((song, index) => {
-                    return (
-                      <Draggable
-                        key={song.id}
-                        draggableId={song.id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <li
-                            className={`relative flex items-center bg-white p-2 border-2 border-gray-200 rounded`}
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <div className="h-32 w-32 mr-4 shrink-0">
-                              <img
-                                className={`w-full h-auto`}
-                                src={song.img}
-                                alt={`${name} Thumb`}
-                              />
-                            </div>
-                            <div className={"flex flex-col gap-2"}>
-                              <p className={`text-md font-bold text-black`}>
-                                {song.name}
-                              </p>
-                              <div
-                                className={
-                                  "flex flex-col gap-1 justify-content-center"
-                                }
-                              >
-                                <p
-                                  className={`text-xs font-semibold text-gray-500`}
-                                >
-                                  Key: {song.key}
-                                </p>
-                                <p
-                                  className={`text-xs font-semibold text-gray-500`}
-                                >
-                                  BPM: {song.bpm}
-                                </p>
-                                <p
-                                  className={`text-xs font-semibold text-gray-500`}
-                                >
-                                  Time Sig:{" "}
-                                  {`${song.time_signature_top} / ${song.time_signature_bottom}`}
-                                </p>
-                                <p
-                                  className={`text-xs font-semibold text-gray-500`}
-                                >
-                                  Duration:{" "}
-                                  {song.clips.length !== 0
-                                    ? song.duration
-                                    : `Click Loop`}
-                                </p>
+    <LoadingOverlay
+      active={isLoading}
+      spinner={
+        <Audio
+          height="100"
+          width="100"
+          color="white"
+          ariaLabel="three-dots-loading"
+          wrapperClass={"mb-4"}
+        />
+      }
+      text="Building your Ableton set. This may take a minute..."
+      styles={{
+        overlay: (base) => ({
+          ...base,
+          position: "fixed",
+          height: "100vh", // Set the height to 100% of the viewport
+        }),
+      }}
+    >
+      <div className="bg-gray-600 p-5 mb-5">
+        <div style={{ maxWidth: "1280px" }} className="mx-auto">
+          <div className={"pb-5 border-b"}>
+            <header className="App-header">
+              <h1
+                className={`text-4xl font-semibold uppercase pb-3 mb-5 border-b`}
+              >
+                Sunday Set Builder
+              </h1>
+            </header>
+            <DragDropContext onDragEnd={handleOnDragEnd}>
+              <Droppable droppableId="songs">
+                {(provided) => (
+                  <ul
+                    className="flex flex-col gap-4 list-none"
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {songOrder.map((song, index) => {
+                      return (
+                        <Draggable
+                          key={song.id}
+                          draggableId={song.id}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <li
+                              className={`relative flex items-center bg-white p-2 border-2 border-gray-200 rounded`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              <div className="h-32 w-32 mr-4 shrink-0">
+                                <img
+                                  className={`w-full h-auto`}
+                                  src={song.img}
+                                  alt={`${name} Thumb`}
+                                />
                               </div>
-                            </div>
-                            {/* Edit button */}
-                            <div className={"absolute top-0 right-0 p-2"}>
-                              <button
-                                className="text-2xl font-bold mr-2 text-gray-600 hover:text-gray-800"
-                                onClick={() => console.log(`edit ${song.name}`)}
-                              >
-                                <MdEdit />
-                              </button>
-                              <button
-                                className="text-2xl font-bold text-gray-600 hover:text-gray-800"
-                                onClick={() => openDeleteModal(song.id)}
-                              >
-                                <MdDelete />
-                              </button>
-                            </div>
-                          </li>
-                        )}
-                      </Draggable>
-                    );
-                  })}
-                  {provided.placeholder}
-                </ul>
-              )}
-            </Droppable>
-          </DragDropContext>
-          <FileDropzone
-            songOrder={songOrder}
-            setSongOrder={setSongOrder}
-            multiTracks={multiTracks}
-            setMultiTracks={setMultiTracks}
-            audioClips={audioClips}
-            setAudioClips={setAudioClips}
-          />
-        </div>
-        <div className={"flex justify-between gap-4 pt-5"}>
-          <div className={"flex gap-4"}>
+                              <div className={"flex flex-col gap-2"}>
+                                <p className={`text-md font-bold text-black`}>
+                                  {song.name}
+                                </p>
+                                <div
+                                  className={
+                                    "flex flex-col gap-1 justify-content-center"
+                                  }
+                                >
+                                  <p
+                                    className={`text-xs font-semibold text-gray-500`}
+                                  >
+                                    Key: {song.key}
+                                  </p>
+                                  <p
+                                    className={`text-xs font-semibold text-gray-500`}
+                                  >
+                                    BPM: {song.bpm}
+                                  </p>
+                                  <p
+                                    className={`text-xs font-semibold text-gray-500`}
+                                  >
+                                    Time Sig:{" "}
+                                    {`${song.time_signature_top} / ${song.time_signature_bottom}`}
+                                  </p>
+                                  <p
+                                    className={`text-xs font-semibold text-gray-500`}
+                                  >
+                                    Duration:{" "}
+                                    {song.clips.length !== 0
+                                      ? song.duration
+                                      : `Click Loop`}
+                                  </p>
+                                </div>
+                              </div>
+                              {/* Edit button */}
+                              <div className={"absolute top-0 right-0 p-2"}>
+                                <button
+                                  className="text-2xl font-bold mr-2 text-gray-600 hover:text-gray-800"
+                                  onClick={() =>
+                                    console.log(`edit ${song.name}`)
+                                  }
+                                >
+                                  <MdEdit />
+                                </button>
+                                <button
+                                  className="text-2xl font-bold text-gray-600 hover:text-gray-800"
+                                  onClick={() => openDeleteModal(song.id)}
+                                >
+                                  <MdDelete />
+                                </button>
+                              </div>
+                            </li>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </ul>
+                )}
+              </Droppable>
+            </DragDropContext>
+            <FileDropzone
+              songOrder={songOrder}
+              setSongOrder={setSongOrder}
+              multiTracks={multiTracks}
+              setMultiTracks={setMultiTracks}
+              audioClips={audioClips}
+              setAudioClips={setAudioClips}
+            />
+          </div>
+          <div className={"flex justify-between gap-4 pt-5"}>
+            <div className={"flex gap-4"}>
+              <button
+                className={"bg-white text-gray-800 font-bold px-4 py-3"}
+                onClick={openModal}
+              >
+                Add Click Track
+              </button>
+            </div>
             <button
-              className={"bg-white text-gray-800 font-bold px-4 py-3"}
-              onClick={openModal}
+              disabled={songOrder.length <= 0}
+              className={
+                "disabled:bg-gray-400 bg-white text-gray-800 font-bold px-4 py-3"
+              }
+              onClick={postBuildSet}
             >
-              Add Click Track
+              Build Ableton Set
             </button>
           </div>
-          <button
-            disabled={songOrder.length <= 0}
-            className={
-              "disabled:bg-gray-400 bg-white text-gray-800 font-bold px-4 py-3"
-            }
-            onClick={postBuildSet}
-          >
-            Build Ableton Set
-          </button>
+          {/* Render the modal if isModalOpen is true */}
+          {isModalOpen && (
+            <AddClickTrackModal
+              onClose={closeModal}
+              onAddClickTrack={handleAddClickTrack}
+            />
+          )}
+          {isDeleteModalOpen && (
+            <DeleteSongModal
+              onClose={closeDeleteModal}
+              onDeleteSong={handleDeleteSong}
+            />
+          )}
         </div>
-        {/* Render the modal if isModalOpen is true */}
-        {isModalOpen && (
-          <AddClickTrackModal
-            onClose={closeModal}
-            onAddClickTrack={handleAddClickTrack}
-          />
-        )}
-        {isDeleteModalOpen && (
-          <DeleteSongModal
-            onClose={closeDeleteModal}
-            onDeleteSong={handleDeleteSong}
-          />
-        )}
       </div>
-    </div>
+    </LoadingOverlay>
   );
 }
 

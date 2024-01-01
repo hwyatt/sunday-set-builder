@@ -20,3 +20,9 @@ body {
   color: rgb(var(--foreground-rgb));
   background: rgb(75, 85, 99);
 }
+
+._loading_overlay_content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

@@ -27,8 +27,6 @@ export default function Home() {
     setModalOpen(true);
   };
 
-  console.log(songOrder);
-
   const closeModal = () => {
     setModalOpen(false);
   };

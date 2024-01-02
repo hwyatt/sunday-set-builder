@@ -21,10 +21,13 @@ export default function Home() {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   const [songToDeleteId, setSongToDeleteId] = useState("");
+  const [songToEditId, setSongToEditId] = useState("");
 
   const openModal = () => {
     setModalOpen(true);
   };
+
+  console.log(songOrder);
 
   const closeModal = () => {
     setModalOpen(false);
@@ -39,11 +42,13 @@ export default function Home() {
     setDeleteModalOpen(false);
   };
 
-  const openEditModal = () => {
+  const openEditModal = (songId: string) => {
+    setSongToEditId(songId);
     setEditModalOpen(true);
   };
 
   const closeEditModal = () => {
+    setSongToEditId("");
     setEditModalOpen(false);
   };
 
@@ -198,7 +203,18 @@ export default function Home() {
                                   <p
                                     className={`text-xs font-semibold text-gray-500`}
                                   >
-                                    Key: {song.key}
+                                    Key:{" "}
+                                    {song.displayKey !== undefined &&
+                                    song.key === "0"
+                                      ? song.displayKey
+                                      : song.key.includes("-")
+                                      ? `${song.key.replace(
+                                          "-",
+                                          ""
+                                        )} half-steps below original key (${
+                                          song.displayKey
+                                        })`
+                                      : `${song.key} half-steps above original key (${song.displayKey})`}
                                   </p>
                                   <p
                                     className={`text-xs font-semibold text-gray-500`}
@@ -225,20 +241,10 @@ export default function Home() {
                               <div className={"absolute top-0 right-0 p-2"}>
                                 <button
                                   className="text-2xl font-bold mr-2 text-gray-600 hover:text-gray-800"
-                                  onClick={openEditModal}
+                                  onClick={() => openEditModal(song.id)}
                                 >
                                   <MdEdit />
                                 </button>
-                                {isEditModalOpen && (
-                                  <EditSongModal
-                                    onClose={closeEditModal}
-                                    onEditSong={handleEditSong}
-                                    id={song.id}
-                                    name={song.name}
-                                    bpm={song.bpm}
-                                    currentKey={song.key}
-                                  />
-                                )}
                                 <button
                                   className="text-2xl font-bold text-gray-600 hover:text-gray-800"
                                   onClick={() => openDeleteModal(song.id)}
@@ -297,12 +303,13 @@ export default function Home() {
               onDeleteSong={handleDeleteSong}
             />
           )}
-          {/* {isEditModalOpen && (
+          {isEditModalOpen && songToEditId && (
             <EditSongModal
               onClose={closeEditModal}
               onEditSong={handleEditSong}
+              song={songOrder.find((song) => song.id === songToEditId)}
             />
-          )} */}
+          )}
         </div>
       </div>
     </LoadingOverlay>
@@ -398,6 +405,7 @@ function FileDropzone({
                 time_signature_bottom: res?.time_signature_bottom,
                 track: true,
                 key: "0",
+                displayKey: displayKey,
                 duration: res?.duration,
                 clips: clips,
                 img: coverImgSrc,

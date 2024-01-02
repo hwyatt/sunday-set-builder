@@ -1,25 +1,20 @@
 import React, { useState } from "react";
 
-const EditSongModal = ({
-  onClose,
-  onEditSong,
-  id,
-  name,
-  bpm,
-  currentKey,
-}: any) => {
-  const [editedBPM, setEditedBPM] = useState(bpm);
-  const [editedKey, setEditedKey] = useState(currentKey);
+const EditSongModal = ({ onClose, onEditSong, song }: any) => {
+  const [editedBPM, setEditedBPM] = useState(song.bpm);
+  const [editedKey, setEditedKey] = useState(song.key);
 
   const handleEditSong = () => {
-    onEditSong(id, editedBPM, editedKey);
+    onEditSong(song.id, editedBPM, editedKey);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-8 w-96 rounded-md">
-        <h2 className="text-2xl text-gray-600 font-bold mb-5">Edit {name}</h2>
+        <h2 className="text-2xl text-gray-600 font-bold mb-5">
+          Edit {song.name}
+        </h2>
 
         <div className="mb-5">
           <label
@@ -51,17 +46,19 @@ const EditSongModal = ({
             value={editedKey}
             onChange={(e) => setEditedKey(e.target.value)}
           >
+            <option value="-6">-6</option>
             <option value="-5">-5</option>
             <option value="-4">-4</option>
             <option value="-3">-3</option>
             <option value="-2">-2</option>
             <option value="-1">-1</option>
             <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
+            <option value="1">+1</option>
+            <option value="2">+2</option>
+            <option value="3">+3</option>
+            <option value="4">+4</option>
+            <option value="5">+5</option>
+            <option value="6">+6</option>
           </select>
           <label
             htmlFor="editedKey"

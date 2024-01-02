@@ -7,6 +7,7 @@ import DeleteSongModal from "@/components/DeleteSongModal";
 import { MdEdit, MdDelete } from "react-icons/md";
 import LoadingOverlay from "react-loading-overlay-ts";
 import { Audio } from "react-loader-spinner";
+import EditSongModal from "@/components/EditSongModal";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +18,7 @@ export default function Home() {
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   const [songToDeleteId, setSongToDeleteId] = useState("");
 
@@ -35,6 +37,14 @@ export default function Home() {
 
   const closeDeleteModal = () => {
     setDeleteModalOpen(false);
+  };
+
+  const openEditModal = () => {
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
   };
 
   const handleAddClickTrack = ({ clickName, clickBPM, clickTime }: any) => {
@@ -62,6 +72,21 @@ export default function Home() {
     const updatedSongOrder = songOrder.filter(
       (song) => song.id !== songToDeleteId
     );
+    setSongOrder(updatedSongOrder);
+  };
+
+  const handleEditSong = (songId: string, songBPM: string, songKey: string) => {
+    const updatedSongOrder = songOrder.map((song) => {
+      if (song.id === songId) {
+        return {
+          ...song,
+          bpm: songBPM !== undefined ? songBPM : song.bpm,
+          key: songKey !== undefined ? songKey : song.key,
+        };
+      }
+      return song;
+    });
+
     setSongOrder(updatedSongOrder);
   };
 
@@ -200,12 +225,20 @@ export default function Home() {
                               <div className={"absolute top-0 right-0 p-2"}>
                                 <button
                                   className="text-2xl font-bold mr-2 text-gray-600 hover:text-gray-800"
-                                  onClick={() =>
-                                    console.log(`edit ${song.name}`)
-                                  }
+                                  onClick={openEditModal}
                                 >
                                   <MdEdit />
                                 </button>
+                                {isEditModalOpen && (
+                                  <EditSongModal
+                                    onClose={closeEditModal}
+                                    onEditSong={handleEditSong}
+                                    id={song.id}
+                                    name={song.name}
+                                    bpm={song.bpm}
+                                    currentKey={song.key}
+                                  />
+                                )}
                                 <button
                                   className="text-2xl font-bold text-gray-600 hover:text-gray-800"
                                   onClick={() => openDeleteModal(song.id)}
@@ -264,6 +297,12 @@ export default function Home() {
               onDeleteSong={handleDeleteSong}
             />
           )}
+          {/* {isEditModalOpen && (
+            <EditSongModal
+              onClose={closeEditModal}
+              onEditSong={handleEditSong}
+            />
+          )} */}
         </div>
       </div>
     </LoadingOverlay>

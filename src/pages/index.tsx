@@ -447,6 +447,7 @@ function FileDropzone({
         width={150}
         height={150}
         alt="Upload Tracks Icon"
+        priority
       />
       {isDragActive ? (
         <p className={`cursor-pointer font-semibold text-xl text-center`}>

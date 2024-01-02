@@ -1,13 +1,24 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { useEffect } from "react";
-import { initGA, logPageView } from "../../analytics"; // Import the utility you created
+import Script from "next/script";
 
 export default function App({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    initGA();
-    logPageView();
-  }, []);
+  return (
+    <>
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-N1F9EJ6CY4"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          gtag('js', new Date());
 
-  return <Component {...pageProps} />;
+          gtag('config', 'G-N1F9EJ6CY4');
+        `}
+      </Script>
+      <Component {...pageProps} />
+    </>
+  );
 }

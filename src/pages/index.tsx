@@ -7,7 +7,7 @@ import DeleteSongModal from "@/components/DeleteSongModal";
 import { MdEdit, MdDelete } from "react-icons/md";
 import LoadingOverlay from "react-loading-overlay-ts";
 import { Audio } from "react-loader-spinner";
-import EditSongModal from "@/components/EditSongModal";
+import EditSongModal, { calculateKey } from "@/components/EditSongModal";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -205,14 +205,10 @@ export default function Home() {
                                     {song.displayKey !== undefined &&
                                     song.key === "0"
                                       ? song.displayKey
-                                      : song.key.includes("-")
-                                      ? `${song.key.replace(
-                                          "-",
-                                          ""
-                                        )} half-steps below original key (${
-                                          song.displayKey
-                                        })`
-                                      : `${song.key} half-steps above original key (${song.displayKey})`}
+                                      : calculateKey(
+                                          song.displayKey,
+                                          Number(song.key)
+                                        )}
                                   </p>
                                   <p
                                     className={`text-xs font-semibold text-gray-500`}

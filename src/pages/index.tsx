@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import DeleteSongModal from "@/components/DeleteSongModal";
 import { MdEdit, MdDelete } from "react-icons/md";
+import { RiExternalLinkLine } from "react-icons/ri";
 import LoadingOverlay from "react-loading-overlay-ts";
 import { Audio } from "react-loader-spinner";
 import EditSongModal, { calculateKey } from "@/components/EditSongModal";
@@ -60,6 +61,7 @@ export default function Home() {
       id: (Date.now() + Math.random()).toString().replace(".", ""),
       name: clickName,
       bpm: clickBPM,
+      originalBPM: clickBPM,
       time_signature_top: timeTop,
       time_signature_bottom: timeBottom,
       track: false,
@@ -153,12 +155,14 @@ export default function Home() {
       <div className="bg-gray-600 p-5 mb-5">
         <div style={{ maxWidth: "1280px" }} className="mx-auto">
           <div className={"pb-5 border-b"}>
-            <header className="App-header">
-              <h1
-                className={`text-4xl font-semibold uppercase pb-3 mb-5 border-b`}
-              >
+            <header className="App-header flex justify-between items-center mb-5 border-b">
+              <h1 className={`text-4xl font-semibold uppercase pb-3`}>
                 Sunday Set Builder
               </h1>
+              <a className={"flex items-center font-semibold pb-3"} href="/how">
+                How It Works
+                <RiExternalLinkLine className={"ml-2"} />
+              </a>
             </header>
             <DragDropContext onDragEnd={handleOnDragEnd}>
               <Droppable droppableId="songs">
@@ -395,6 +399,7 @@ function FileDropzone({
                 id: (Date.now() + Math.random()).toString().replace(".", ""),
                 name: songNameParsed,
                 bpm: res?.bpm,
+                originalBPM: res?.bpm,
                 time_signature_top: res?.time_signature_top,
                 time_signature_bottom: res?.time_signature_bottom,
                 track: true,

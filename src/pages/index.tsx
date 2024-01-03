@@ -10,6 +10,7 @@ import LoadingOverlay from "react-loading-overlay-ts";
 import { Audio } from "react-loader-spinner";
 import EditSongModal, { calculateKey } from "@/components/EditSongModal";
 import DownloadModal from "@/components/DownloadModal";
+import Link from "next/link";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -181,10 +182,13 @@ export default function Home() {
               <h1 className={`text-4xl font-semibold uppercase pb-3`}>
                 Sunday Set Builder
               </h1>
-              <a className={"flex items-center font-semibold pb-3"} href="/how">
+              <Link
+                className={"flex items-center font-semibold pb-3"}
+                href="/how"
+              >
                 How It Works
                 <RiExternalLinkLine className={"ml-2"} />
-              </a>
+              </Link>
             </header>
             <DragDropContext onDragEnd={handleOnDragEnd}>
               <Droppable droppableId="songs">
@@ -209,7 +213,7 @@ export default function Home() {
                               {...provided.dragHandleProps}
                             >
                               <div className="h-32 w-32 mr-4 shrink-0">
-                                <img
+                                <Image
                                   className={`w-full h-auto`}
                                   src={song.img}
                                   alt={`${name} Thumb`}
@@ -463,7 +467,14 @@ function FileDropzone({
       } else {
       }
     },
-    [songOrder, multiTracks, audioClips]
+    [
+      songOrder,
+      multiTracks,
+      audioClips,
+      setAudioClips,
+      setMultiTracks,
+      setSongOrder,
+    ]
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 

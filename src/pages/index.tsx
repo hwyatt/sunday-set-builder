@@ -206,13 +206,14 @@ export default function Home() {
                                     className={`text-xs font-semibold text-gray-500`}
                                   >
                                     Key:{" "}
-                                    {song.displayKey !== undefined &&
-                                    song.key === "0"
-                                      ? song.displayKey
-                                      : calculateKey(
-                                          song.displayKey,
-                                          Number(song.key)
-                                        )}
+                                    {song.displayKey !== undefined
+                                      ? song.key === "0"
+                                        ? song.displayKey
+                                        : calculateKey(
+                                            song.displayKey,
+                                            Number(song.key)
+                                          )
+                                      : "-"}
                                   </p>
                                   <p
                                     className={`text-xs font-semibold text-gray-500`}

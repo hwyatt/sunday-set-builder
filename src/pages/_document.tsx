@@ -20,7 +20,23 @@ class MyDocument extends Document {
   render() {
     return (
       <Html lang="en">
-        <Head />
+        <Head>
+          <meta
+            property="og:title"
+            content="Build an Ableton Set in 60 seconds"
+            key="ogtitle"
+          />
+          <meta
+            property="og:description"
+            content="Sunday Set Builder - a tool for Worship Pastors"
+            key="ogdesc"
+          />
+          <meta
+            property="og:image"
+            content="https://i.ibb.co/ySBt1Jm/SSB-Logo.png"
+            key="ogimage"
+          />
+        </Head>
         <body>
           <Main />
           <NextScript />

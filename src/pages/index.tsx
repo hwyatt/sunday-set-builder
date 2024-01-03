@@ -9,6 +9,7 @@ import { RiExternalLinkLine } from "react-icons/ri";
 import LoadingOverlay from "react-loading-overlay-ts";
 import { Audio } from "react-loader-spinner";
 import EditSongModal, { calculateKey } from "@/components/EditSongModal";
+import DownloadModal from "@/components/DownloadModal";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +21,11 @@ export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [isDownloadModalOpen, setDownloadModalOpen] = useState(false);
 
   const [songToDeleteId, setSongToDeleteId] = useState("");
   const [songToEditId, setSongToEditId] = useState("");
+  const [setToDownloadId, setSetToDownloadId] = useState("");
 
   const openModal = () => {
     setModalOpen(true);
@@ -49,6 +52,16 @@ export default function Home() {
   const closeEditModal = () => {
     setSongToEditId("");
     setEditModalOpen(false);
+  };
+
+  const openDownloadModal = (setId: string) => {
+    setSetToDownloadId(setId);
+    setDownloadModalOpen(true);
+  };
+
+  const closeDownloadModal = () => {
+    setSetToDownloadId("");
+    setDownloadModalOpen(false);
   };
 
   const handleAddClickTrack = ({ clickName, clickBPM, clickTime }: any) => {
@@ -95,6 +108,10 @@ export default function Home() {
     setSongOrder(updatedSongOrder);
   };
 
+  const handleDownloadSet = () => {
+    window.open(`http://localhost:8080/download?id=${setToDownloadId}`);
+  };
+
   function handleOnDragEnd(result: any) {
     if (!result.destination) return;
 
@@ -123,7 +140,12 @@ export default function Home() {
       });
 
       const setInfoRes = await response.json();
-      window.open(`http://localhost:8080/download?id=${setInfoRes.id}`);
+      const downloadSet = window.open(
+        `http://localhost:8080/download?id=${setInfoRes.id}`
+      );
+      if (downloadSet == null || typeof downloadSet == "undefined") {
+        openDownloadModal(setInfoRes.id);
+      }
     } catch (e) {
       return console.log(e);
     } finally {
@@ -307,6 +329,13 @@ export default function Home() {
               onClose={closeEditModal}
               onEditSong={handleEditSong}
               song={songOrder.find((song) => song.id === songToEditId)}
+            />
+          )}
+          {isDownloadModalOpen && setToDownloadId && (
+            <DownloadModal
+              id={setToDownloadId}
+              onClose={closeDownloadModal}
+              onDownloadSet={handleDownloadSet}
             />
           )}
         </div>

@@ -28,12 +28,12 @@ class MyDocument extends Document {
           />
           <meta
             property="og:description"
-            content="Sunday Set Builder - a tool for Worship Pastors"
+            content="Sunday Set Builder - a tool for Worship Pastors and Leaders"
             key="ogdesc"
           />
           <meta
             property="og:image"
-            content="https://i.ibb.co/ySBt1Jm/SSB-Logo.png"
+            content="https://i.ibb.co/2js41fK/Copy-of-SSB-Logo.png"
             key="ogimage"
           />
         </Head>

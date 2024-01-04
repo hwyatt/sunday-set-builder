@@ -129,11 +129,11 @@ export default function Home() {
       const formData = new FormData();
       formData.append("json", JSON.stringify(songOrder));
 
-      for (let i = 0; i < multiTracks.length; i++) {
-        for (let j = 0; j < multiTracks[i].clips.length; j++) {
-          formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
-        }
-      }
+      // for (let i = 0; i < multiTracks.length; i++) {
+      //   for (let j = 0; j < multiTracks[i].clips.length; j++) {
+      //     formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
+      //   }
+      // }
 
       const response = await fetch("http://localhost:8080/set", {
         method: "POST",
@@ -217,6 +217,8 @@ export default function Home() {
                                   className={`w-full h-auto`}
                                   src={song.img}
                                   alt={`${name} Thumb`}
+                                  height={150}
+                                  width={150}
                                 />
                               </div>
                               <div className={"flex flex-col gap-2"}>
@@ -459,6 +461,7 @@ function FileDropzone({
         });
 
       const trackItems = Array.from(multiTracks);
+      console.log(songName);
       trackItems.push({ name: songName, clips: trax });
       setMultiTracks(trackItems);
 

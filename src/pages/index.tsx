@@ -181,7 +181,7 @@ export default function Home() {
       <div className="bg-gray-600 p-5 mb-5">
         <div style={{ maxWidth: "1280px" }} className="mx-auto">
           <div className={"pb-5 border-b"}>
-            <header className="App-header flex justify-between items-center mb-5 border-b">
+            <header className="App-header flex flex-col md:flex-row justify-between md:items-center mb-5 border-b">
               <h1 className={`text-4xl font-semibold uppercase pb-3`}>
                 Sunday Set Builder
               </h1>

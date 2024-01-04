@@ -182,12 +182,25 @@ export default function Home() {
         <div style={{ maxWidth: "1280px" }} className="mx-auto">
           <div className={"pb-5 border-b"}>
             <header className="App-header flex flex-col md:flex-row justify-between md:items-center mb-5 border-b">
-              <h1 className={`text-4xl font-semibold uppercase pb-3`}>
-                Sunday Set Builder
-              </h1>
+              <div className={"flex items-center mb-4 md:mb-3"}>
+                <Image
+                  src={"/ssb_logo.png"}
+                  alt={"ssb_logo"}
+                  width={50}
+                  height={50}
+                  priority
+                  className={"mr-3"}
+                />
+                <h1 className={`text-3xl md:text-4xl font-semibold uppercase`}>
+                  Sunday Set Builder
+                </h1>
+              </div>
+
               <Link
                 className={"flex items-center font-semibold pb-3"}
                 href="/how"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 How It Works
                 <RiExternalLinkLine className={"ml-2"} />

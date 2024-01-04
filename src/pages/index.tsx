@@ -12,6 +12,9 @@ import EditSongModal, { calculateKey } from "@/components/EditSongModal";
 import DownloadModal from "@/components/DownloadModal";
 import Link from "next/link";
 
+const BASE_URL = `https://sunday-set-api.onrender.com`;
+// const BASE_URL = `http://localhost:8080`;
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -110,7 +113,7 @@ export default function Home() {
   };
 
   const handleDownloadSet = () => {
-    window.open(`http://localhost:8080/download?id=${setToDownloadId}`);
+    window.open(`${BASE_URL}/download?id=${setToDownloadId}`);
   };
 
   function handleOnDragEnd(result: any) {
@@ -135,14 +138,14 @@ export default function Home() {
       //   }
       // }
 
-      const response = await fetch("http://localhost:8080/set", {
+      const response = await fetch(`${BASE_URL}/set`, {
         method: "POST",
         body: formData,
       });
 
       const setInfoRes = await response.json();
       const downloadSet = window.open(
-        `http://localhost:8080/download?id=${setInfoRes.id}`
+        `${BASE_URL}/download?id=${setInfoRes.id}`
       );
       if (downloadSet == null || typeof downloadSet == "undefined") {
         openDownloadModal(setInfoRes.id);
@@ -166,7 +169,7 @@ export default function Home() {
           wrapperClass={"mb-4"}
         />
       }
-      text="Building your Ableton set. This may take a minute..."
+      // text="Building your Ableton set. This may take a minute..."
       styles={{
         overlay: (base) => ({
           ...base,
@@ -296,6 +299,7 @@ export default function Home() {
               setMultiTracks={setMultiTracks}
               audioClips={audioClips}
               setAudioClips={setAudioClips}
+              setIsLoading={setIsLoading}
             />
           </div>
           <div className={"flex justify-between gap-4 pt-5"}>
@@ -357,6 +361,7 @@ function FileDropzone({
   setMultiTracks,
   audioClips,
   setAudioClips,
+  setIsLoading,
 }: any) {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
@@ -373,22 +378,25 @@ function FileDropzone({
       const songName = name.split("/")[1];
       const getTrackInfo = async (file: any) => {
         try {
+          setIsLoading(true);
           const formData = new FormData();
           formData.append("session", file);
 
-          const response = await fetch("http://localhost:8080/song", {
+          const response = await fetch(`${BASE_URL}/song`, {
             method: "POST",
             body: formData,
           });
 
           if (!response.ok) {
-            throw new Error("Failed to upload file");
+            throw new Error("Failed to process file");
           }
 
           const trackInfoRes = await response.json();
           return trackInfoRes;
         } catch (e) {
           return console.log(e);
+        } finally {
+          setIsLoading(false);
         }
       };
       // separate
@@ -461,12 +469,11 @@ function FileDropzone({
         });
 
       const trackItems = Array.from(multiTracks);
-      console.log(songName);
       trackItems.push({ name: songName, clips: trax });
       setMultiTracks(trackItems);
 
       if (acceptedFiles.length <= 1) {
-        window.alert("Please upload the folder containing all the files");
+        window.alert("Please add the parent folder containing all the files");
       } else {
       }
     },
@@ -477,6 +484,7 @@ function FileDropzone({
       setAudioClips,
       setMultiTracks,
       setSongOrder,
+      setIsLoading,
     ]
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
@@ -491,7 +499,7 @@ function FileDropzone({
         src="/folder.png"
         width={150}
         height={150}
-        alt="Upload Tracks Icon"
+        alt="Add Tracks Icon"
         priority
       />
       {isDragActive ? (
@@ -500,7 +508,7 @@ function FileDropzone({
         </p>
       ) : (
         <p className={`cursor-pointer font-semibold text-xl text-center`}>
-          Drag MultiTrack Folder Here or Click to Upload
+          Drag MultiTrack Folder Here or Click to Add
         </p>
       )}
     </div>

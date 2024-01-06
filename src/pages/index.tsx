@@ -428,7 +428,6 @@ export default function Home() {
             />
           )}
         </div>
-        <button onClick={() => createZip(trackFiles)}>Click me</button>
       </div>
     </LoadingOverlay>
   );

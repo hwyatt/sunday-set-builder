@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/react-beautiful-dnd": "^13.1.7",
+    "client-zip": "^2.4.4",
     "express-fileupload": "^1.4.3",
     "gunzip-file": "^0.1.1",
     "jszip": "^3.10.1",

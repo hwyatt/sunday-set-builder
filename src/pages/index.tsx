@@ -12,51 +12,69 @@ import EditSongModal, { calculateKey } from "@/components/EditSongModal";
 import DownloadModal from "@/components/DownloadModal";
 import Link from "next/link";
 import JSZip from "jszip";
+import { downloadZip } from "client-zip";
 
 // const BASE_URL = `https://sunday-set-api.onrender.com`;
 const BASE_URL = `http://localhost:8080`;
 
 const createZip = async (tracks) => {
-  const zip = new JSZip();
-
-  tracks.forEach((track, index) => {
-    const songFolder = zip.folder(`MultiTracks/${track.name}`);
-
-    track.clips.forEach((clip, clipIndex) => {
-      const clipName = `${clip.name}`;
-      console.log(clipName);
-      console.log(clip.content);
-
-      const currDate = new Date();
-      const dateWithOffset = new Date(
-        currDate.getTime() - currDate.getTimezoneOffset() * 60000
-      );
-      songFolder.file(clipName, clip.content);
+  // client-zip working better until it doesn't
+  console.log("started");
+  let files: any = [];
+  tracks.map((track) => {
+    track.clips.forEach((clip) => {
+      files.push({ name: `${track.name}/${clip.name}`, input: clip.content });
     });
   });
+  try {
+    // get the ZIP stream in a Blob
+    const blob = await downloadZip(files).blob();
 
-  console.log("before zipper");
+    // make and click a temporary link to download the Blob
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "MultiTracks.zip";
+    link.click();
+    link.remove();
+    console.log("finished");
+  } catch (err) {
+    console.log(err);
+  }
 
-  const zipBlob = await zip.generateAsync({ type: "blob" });
+  // JSZIP: create zip for each song
+  // const zipPromises = tracks.map(async (track) => {
+  //   const zip = new JSZip();
+  //   const songFolder = zip.folder(`MultiTracks/${track.name}`);
 
-  console.log("after zipper");
+  //   track.clips.forEach((clip, clipIndex) => {
+  //     const clipName = `${clip.name}`;
+  //     console.log(clipName);
+  //     console.log(clip.content);
 
-  const downloadLink = document.createElement("a");
-  downloadLink.href = URL.createObjectURL(zipBlob);
+  //     songFolder.file(clipName, clip.content);
+  //   });
 
-  downloadLink.download = "Multitracks.zip";
+  //   const zipBlob = await zip.generateAsync({ type: "blob" });
 
-  document.body.appendChild(downloadLink);
+  //   const downloadLink = document.createElement("a");
+  //   downloadLink.href = URL.createObjectURL(zipBlob);
+  //   downloadLink.download = `${track.name}.zip`;
 
-  console.log(downloadLink.href);
+  //   document.body.appendChild(downloadLink);
+  //   downloadLink.click();
 
-  window.open(downloadLink.href);
+  //   document.body.removeChild(downloadLink);
+  //   URL.revokeObjectURL(downloadLink.href);
 
-  // downloadLink.click();
+  //   return `${track.name}.zip`;
+  // });
 
-  // document.body.removeChild(downloadLink);
-
-  // URL.revokeObjectURL(downloadLink.href);
+  // try {
+  //   const zipFiles = await Promise.all(zipPromises);
+  //   console.log("All tracks zipped successfully:", zipFiles);
+  // } catch (error) {
+  //   console.error("Error zipping tracks:", error);
+  // }
 };
 
 export default function Home() {
@@ -174,6 +192,7 @@ export default function Home() {
   const postBuildSet = async () => {
     try {
       setIsLoading(true);
+      createZip(trackFiles);
       const formData = new FormData();
       formData.append("json", JSON.stringify(songOrder));
 

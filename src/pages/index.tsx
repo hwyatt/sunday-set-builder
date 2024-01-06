@@ -17,9 +17,7 @@ import { downloadZip } from "client-zip";
 const BASE_URL = `https://sunday-set-api.onrender.com`;
 // const BASE_URL = `http://localhost:8080`;
 
-const createZip = async (tracks: any) => {
-  // client-zip working better until it doesn't
-  console.log("started");
+const createZip = async (tracks: any, callback: (success: boolean) => void) => {
   let files: any = [];
   tracks.map((track: any) => {
     track.clips.forEach((clip: any) => {
@@ -27,58 +25,27 @@ const createZip = async (tracks: any) => {
     });
   });
   try {
-    // get the ZIP stream in a Blob
     const blob = await downloadZip(files).blob();
 
-    // make and click a temporary link to download the Blob
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "MultiTracks.zip";
     link.click();
     link.remove();
-    console.log("finished");
+
+    callback(true);
   } catch (err) {
     console.log(err);
+    console.log("Couldn't package MultiTracks:", err);
+
+    callback(false);
   }
-
-  // JSZIP: create zip for each song
-  // const zipPromises = tracks.map(async (track) => {
-  //   const zip = new JSZip();
-  //   const songFolder = zip.folder(`MultiTracks/${track.name}`);
-
-  //   track.clips.forEach((clip, clipIndex) => {
-  //     const clipName = `${clip.name}`;
-  //     console.log(clipName);
-  //     console.log(clip.content);
-
-  //     songFolder.file(clipName, clip.content);
-  //   });
-
-  //   const zipBlob = await zip.generateAsync({ type: "blob" });
-
-  //   const downloadLink = document.createElement("a");
-  //   downloadLink.href = URL.createObjectURL(zipBlob);
-  //   downloadLink.download = `${track.name}.zip`;
-
-  //   document.body.appendChild(downloadLink);
-  //   downloadLink.click();
-
-  //   document.body.removeChild(downloadLink);
-  //   URL.revokeObjectURL(downloadLink.href);
-
-  //   return `${track.name}.zip`;
-  // });
-
-  // try {
-  //   const zipFiles = await Promise.all(zipPromises);
-  //   console.log("All tracks zipped successfully:", zipFiles);
-  // } catch (error) {
-  //   console.error("Error zipping tracks:", error);
-  // }
 };
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isMTSuccess, setIsMTSuccess] = useState(false);
 
   const [songOrder, setSongOrder] = useState<any[]>([]);
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
@@ -192,10 +159,17 @@ export default function Home() {
   const postBuildSet = async () => {
     try {
       setIsLoading(true);
-      createZip(trackFiles);
+      await createZip(trackFiles, (zipSuccess: boolean) => {
+        if (zipSuccess) {
+          setIsMTSuccess(true);
+        } else {
+          setIsMTSuccess(false);
+        }
+      });
       const formData = new FormData();
       formData.append("json", JSON.stringify(songOrder));
 
+      // dont send actual MultiTracks to the server
       // for (let i = 0; i < multiTracks.length; i++) {
       //   for (let j = 0; j < multiTracks[i].clips.length; j++) {
       //     formData.append(multiTracks[i].name, multiTracks[i].clips[j]);
@@ -208,12 +182,12 @@ export default function Home() {
       });
 
       const setInfoRes = await response.json();
-      const downloadSet = window.open(
-        `${BASE_URL}/download?id=${setInfoRes.id}`
-      );
-      if (downloadSet == null || typeof downloadSet == "undefined") {
-        openDownloadModal(setInfoRes.id);
-      }
+      const link = document.createElement("a");
+      link.href = `${BASE_URL}/download?id=${setInfoRes.id}`;
+      link.download = `AutomatedSession-${setInfoRes.id}`;
+      link.click();
+      link.remove();
+      setIsSuccess(true);
     } catch (e) {
       return console.log(e);
     } finally {
@@ -223,22 +197,51 @@ export default function Home() {
 
   return (
     <LoadingOverlay
-      active={isLoading}
+      active={isLoading || isSuccess}
       spinner={
-        <Audio
-          height="100"
-          width="100"
-          color="white"
-          ariaLabel="three-dots-loading"
-          wrapperClass={"mb-4"}
-        />
+        !isSuccess && (
+          <Audio
+            height="100"
+            width="100"
+            color="white"
+            ariaLabel="three-dots-loading"
+            wrapperClass={"mb-4"}
+          />
+        )
       }
-      // text="Building your Ableton set. This may take a minute..."
+      text={
+        isSuccess && isMTSuccess ? (
+          <div className={`flex flex-col gap-4`}>
+            <p className={`text-2xl font-bold`}>
+              🚀 Now downloading your Ableton set and MultiTracks files 🚀
+            </p>
+            <p className={`text-lg`}>
+              Unzip both folders, and drag the MultiTracks folder into the
+              AutomatedSession folder
+            </p>
+          </div>
+        ) : isSuccess && !isMTSuccess ? (
+          <div className={`flex flex-col gap-4`}>
+            <p className={`text-2xl font-bold`}>
+              🚀 Now downloading your Ableton set, but there was an issue
+              packaging your MultiTracks 🚀
+            </p>
+            <p className={`text-lg`}>
+              Media files will be missing in Ableton unless you manually supply
+              them in the MultiTracks folder.
+            </p>
+          </div>
+        ) : (
+          <></>
+        )
+      }
       styles={{
         overlay: (base) => ({
           ...base,
           position: "fixed",
-          height: "100vh", // Set the height to 100% of the viewport
+          height: "100vh",
+          backgroundColor: isSuccess ? "black" : base.backgroundColor,
+          opacity: isSuccess ? "0.95" : base.opacity,
         }),
       }}
     >
@@ -521,14 +524,6 @@ function FileDropzone({
           const blob = new Blob([fileContents], { type: file.type });
           const trackHref = URL.createObjectURL(blob);
           const trackName = file.name;
-
-          // // Create a download link
-          // const downloadLink = document.createElement("a");
-          // downloadLink.href = URL.createObjectURL(blob);
-          // downloadLink.download = file.name;
-
-          // // Trigger a click event on the link to start the download
-          // downloadLink.click();
 
           trax2.push({ name: trackName, content: blob });
         }

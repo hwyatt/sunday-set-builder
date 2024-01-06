@@ -17,12 +17,12 @@ import { downloadZip } from "client-zip";
 const BASE_URL = `https://sunday-set-api.onrender.com`;
 // const BASE_URL = `http://localhost:8080`;
 
-const createZip = async (tracks) => {
+const createZip = async (tracks: any) => {
   // client-zip working better until it doesn't
   console.log("started");
   let files: any = [];
-  tracks.map((track) => {
-    track.clips.forEach((clip) => {
+  tracks.map((track: any) => {
+    track.clips.forEach((clip: any) => {
       files.push({ name: `${track.name}/${clip.name}`, input: clip.content });
     });
   });
@@ -482,11 +482,11 @@ function FileDropzone({
         }
       };
 
-      const readFileAsArrayBuffer = (file) => {
+      const readFileAsArrayBuffer = (file: any) => {
         return new Promise((resolve, reject) => {
           const fileReader = new FileReader();
 
-          fileReader.onload = (event) => {
+          fileReader.onload = (event: any) => {
             resolve(event.target.result);
           };
 
@@ -518,7 +518,7 @@ function FileDropzone({
 
           trax.push(file);
 
-          const fileContents = await readFileAsArrayBuffer(file);
+          const fileContents: any = await readFileAsArrayBuffer(file);
           const blob = new Blob([fileContents], { type: file.type });
           const trackHref = URL.createObjectURL(blob);
           const trackName = file.name;

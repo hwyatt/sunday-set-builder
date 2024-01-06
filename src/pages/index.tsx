@@ -11,9 +11,71 @@ import { Audio } from "react-loader-spinner";
 import EditSongModal, { calculateKey } from "@/components/EditSongModal";
 import DownloadModal from "@/components/DownloadModal";
 import Link from "next/link";
+import JSZip from "jszip";
+import { downloadZip } from "client-zip";
 
 const BASE_URL = `https://sunday-set-api.onrender.com`;
 // const BASE_URL = `http://localhost:8080`;
+
+const createZip = async (tracks: any) => {
+  // client-zip working better until it doesn't
+  console.log("started");
+  let files: any = [];
+  tracks.map((track: any) => {
+    track.clips.forEach((clip: any) => {
+      files.push({ name: `${track.name}/${clip.name}`, input: clip.content });
+    });
+  });
+  try {
+    // get the ZIP stream in a Blob
+    const blob = await downloadZip(files).blob();
+
+    // make and click a temporary link to download the Blob
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "MultiTracks.zip";
+    link.click();
+    link.remove();
+    console.log("finished");
+  } catch (err) {
+    console.log(err);
+  }
+
+  // JSZIP: create zip for each song
+  // const zipPromises = tracks.map(async (track) => {
+  //   const zip = new JSZip();
+  //   const songFolder = zip.folder(`MultiTracks/${track.name}`);
+
+  //   track.clips.forEach((clip, clipIndex) => {
+  //     const clipName = `${clip.name}`;
+  //     console.log(clipName);
+  //     console.log(clip.content);
+
+  //     songFolder.file(clipName, clip.content);
+  //   });
+
+  //   const zipBlob = await zip.generateAsync({ type: "blob" });
+
+  //   const downloadLink = document.createElement("a");
+  //   downloadLink.href = URL.createObjectURL(zipBlob);
+  //   downloadLink.download = `${track.name}.zip`;
+
+  //   document.body.appendChild(downloadLink);
+  //   downloadLink.click();
+
+  //   document.body.removeChild(downloadLink);
+  //   URL.revokeObjectURL(downloadLink.href);
+
+  //   return `${track.name}.zip`;
+  // });
+
+  // try {
+  //   const zipFiles = await Promise.all(zipPromises);
+  //   console.log("All tracks zipped successfully:", zipFiles);
+  // } catch (error) {
+  //   console.error("Error zipping tracks:", error);
+  // }
+};
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +83,7 @@ export default function Home() {
   const [songOrder, setSongOrder] = useState<any[]>([]);
   const [multiTracks, setMultiTracks] = useState<any[]>([]);
   const [audioClips, setAudioClips] = useState<any[]>([]);
+  const [trackFiles, setTrackFiles] = useState<any[]>([]);
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -129,6 +192,7 @@ export default function Home() {
   const postBuildSet = async () => {
     try {
       setIsLoading(true);
+      createZip(trackFiles);
       const formData = new FormData();
       formData.append("json", JSON.stringify(songOrder));
 
@@ -313,6 +377,8 @@ export default function Home() {
               audioClips={audioClips}
               setAudioClips={setAudioClips}
               setIsLoading={setIsLoading}
+              trackFiles={trackFiles}
+              setTrackFiles={setTrackFiles}
             />
           </div>
           <div className={"flex justify-between gap-4 pt-5"}>
@@ -362,6 +428,7 @@ export default function Home() {
             />
           )}
         </div>
+        <button onClick={() => createZip(trackFiles)}>Click me</button>
       </div>
     </LoadingOverlay>
   );
@@ -375,6 +442,8 @@ function FileDropzone({
   audioClips,
   setAudioClips,
   setIsLoading,
+  trackFiles,
+  setTrackFiles,
 }: any) {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
@@ -412,9 +481,26 @@ function FileDropzone({
           setIsLoading(false);
         }
       };
+
+      const readFileAsArrayBuffer = (file: any) => {
+        return new Promise((resolve, reject) => {
+          const fileReader = new FileReader();
+
+          fileReader.onload = (event: any) => {
+            resolve(event.target.result);
+          };
+
+          fileReader.onerror = (event) => {
+            reject(new Error("Error reading file."));
+          };
+
+          fileReader.readAsArrayBuffer(file);
+        });
+      };
       // separate
       let clips: any = [];
       let trax: any = [];
+      let trax2: any = [];
       let coverImgSrc: any;
       const promises = acceptedFiles.map(async (file: any) => {
         if (
@@ -431,6 +517,21 @@ function FileDropzone({
           });
 
           trax.push(file);
+
+          const fileContents: any = await readFileAsArrayBuffer(file);
+          const blob = new Blob([fileContents], { type: file.type });
+          const trackHref = URL.createObjectURL(blob);
+          const trackName = file.name;
+
+          // // Create a download link
+          // const downloadLink = document.createElement("a");
+          // downloadLink.href = URL.createObjectURL(blob);
+          // downloadLink.download = file.name;
+
+          // // Trigger a click event on the link to start the download
+          // downloadLink.click();
+
+          trax2.push({ name: trackName, content: blob });
         }
 
         // handle img
@@ -484,6 +585,9 @@ function FileDropzone({
       const trackItems = Array.from(multiTracks);
       trackItems.push({ name: songName, clips: trax });
       setMultiTracks(trackItems);
+      const trackFileArray = Array.from(trackFiles);
+      trackFileArray.push({ name: songName, clips: trax2 });
+      setTrackFiles(trackFileArray);
 
       if (acceptedFiles.length <= 1) {
         window.alert("Please add the parent folder containing all the files");
@@ -498,6 +602,8 @@ function FileDropzone({
       setMultiTracks,
       setSongOrder,
       setIsLoading,
+      trackFiles,
+      setTrackFiles,
     ]
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });

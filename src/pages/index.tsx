@@ -543,7 +543,7 @@ function FileDropzone({
             const res = await getTrackInfo(file);
 
             let songName = file.path;
-            const songNameParsed = songName.split("/")[1].split("-")[0];
+            const songNameParsed = songName.split("/")[1];
 
             const items = [
               ...songOrder,

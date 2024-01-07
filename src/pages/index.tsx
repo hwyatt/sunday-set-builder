@@ -35,7 +35,6 @@ const createZip = async (tracks: any, callback: (success: boolean) => void) => {
 
     callback(true);
   } catch (err) {
-    console.log(err);
     console.log("Couldn't package MultiTracks:", err);
 
     callback(false);

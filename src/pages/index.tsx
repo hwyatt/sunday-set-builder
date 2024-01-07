@@ -1,3 +1,4 @@
+"use client";
 import AddClickTrackModal from "@/components/AddClickTrackModal";
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";

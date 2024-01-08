@@ -283,7 +283,8 @@ export default function Home() {
 
               <Link
                 className={"flex items-center font-semibold pb-3"}
-                href="/how"
+                href="How SSB Works.pdf"
+                download
                 target="_blank"
                 rel="noopener noreferrer"
               >

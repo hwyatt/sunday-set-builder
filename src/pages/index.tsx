@@ -11,8 +11,8 @@ import LoadingOverlay from "react-loading-overlay-ts";
 import { Audio } from "react-loader-spinner";
 import EditSongModal, { calculateKey } from "@/components/EditSongModal";
 import DownloadModal from "@/components/DownloadModal";
+import Alert from "@/components/Alert";
 import Link from "next/link";
-import JSZip from "jszip";
 import { downloadZip } from "client-zip";
 
 const BASE_URL = `https://sunday-set-api.onrender.com`;
@@ -20,11 +20,28 @@ const BASE_URL = `https://sunday-set-api.onrender.com`;
 
 const createZip = async (tracks: any, callback: (success: boolean) => void) => {
   let files: any = [];
-  tracks.map((track: any) => {
+
+  if (tracks.length === 1) {
+    // Single song structure
+    const track = tracks[0];
     track.clips.forEach((clip: any) => {
-      files.push({ name: `${track.name}/${clip.name}`, input: clip.content });
+      files.push({
+        name: `MultiTracks/${track.name}/${clip.name}`,
+        input: clip.content,
+      });
     });
-  });
+  } else {
+    // Multiple songs structure
+    tracks.forEach((track: any) => {
+      track.clips.forEach((clip: any) => {
+        files.push({
+          name: `MultiTracks/${track.name}/${clip.name}`,
+          input: clip.content,
+        });
+      });
+    });
+  }
+
   try {
     const blob = await downloadZip(files).blob();
 
@@ -56,6 +73,7 @@ export default function Home() {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   const [songToDeleteId, setSongToDeleteId] = useState("");
   const [songToEditId, setSongToEditId] = useState("");
@@ -273,6 +291,12 @@ export default function Home() {
                 <RiExternalLinkLine className={"ml-2"} />
               </Link>
             </header>
+            {isAlertOpen && (
+              <Alert
+                message="There was an error. Did you add the original MultiTracks project folder?"
+                type="error"
+              />
+            )}
             <DragDropContext onDragEnd={handleOnDragEnd}>
               <Droppable droppableId="songs">
                 {(provided) => (
@@ -382,6 +406,7 @@ export default function Home() {
               setIsLoading={setIsLoading}
               trackFiles={trackFiles}
               setTrackFiles={setTrackFiles}
+              setIsAlertOpen={setIsAlertOpen}
             />
           </div>
           <div className={"flex justify-between gap-4 pt-5"}>
@@ -446,146 +471,155 @@ function FileDropzone({
   setIsLoading,
   trackFiles,
   setTrackFiles,
+  setIsAlertOpen,
 }: any) {
   const onDrop = useCallback(
     (acceptedFiles: any) => {
-      const result = acceptedFiles.filter((obj: any) => {
-        return obj.name.toLowerCase().indexOf("guide") !== -1;
-      });
-      let name = result[0].path;
-      let displayKey: string = "";
       try {
-        displayKey = name.split("-")[2];
-      } catch (err) {
-        console.log("Could not get key from string: ", err);
-      }
-      const songName = name.split("/")[1];
-      const getTrackInfo = async (file: any) => {
+        const result = acceptedFiles.filter((obj: any) => {
+          return obj.name.toLowerCase().indexOf("guide") !== -1;
+        });
+        let name = result[0].path;
+        let displayKey: string = "";
         try {
-          setIsLoading(true);
-          const formData = new FormData();
-          formData.append("session", file);
-
-          const response = await fetch(`${BASE_URL}/song`, {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to process file");
-          }
-
-          const trackInfoRes = await response.json();
-          return trackInfoRes;
-        } catch (e) {
-          return console.log(e);
-        } finally {
-          setIsLoading(false);
+          displayKey = name.split("-")[2];
+        } catch (err) {
+          console.log("Could not get key from string: ", err);
         }
-      };
-
-      const readFileAsArrayBuffer = (file: any) => {
-        return new Promise((resolve, reject) => {
-          const fileReader = new FileReader();
-
-          fileReader.onload = (event: any) => {
-            resolve(event.target.result);
-          };
-
-          fileReader.onerror = (event) => {
-            reject(new Error("Error reading file."));
-          };
-
-          fileReader.readAsArrayBuffer(file);
-        });
-      };
-      // separate
-      let clips: any = [];
-      let trax: any = [];
-      let trax2: any = [];
-      let coverImgSrc: any;
-      const promises = acceptedFiles.map(async (file: any) => {
-        if (
-          file.path.toLowerCase().includes("/multitracks/") &&
-          file.name.toLowerCase().indexOf("click") === -1 &&
-          file.name.toLowerCase().indexOf("asd") === -1
-        ) {
-          const clipItems = [...audioClips, file];
-          setAudioClips(clipItems);
-
-          clips.push({
-            name: file.name,
-            path: file.path,
-          });
-
-          trax.push(file);
-
-          const fileContents: any = await readFileAsArrayBuffer(file);
-          const blob = new Blob([fileContents], { type: file.type });
-          const trackHref = URL.createObjectURL(blob);
-          const trackName = file.name;
-
-          trax2.push({ name: trackName, content: blob });
-        }
-
-        // handle img
-        if (file.path.toLowerCase().includes("jpg")) {
-          // Create a data URL for the image
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            coverImgSrc = e?.target?.result;
-          };
-          reader.readAsDataURL(file);
-        }
-
-        if (file.name.toLowerCase().indexOf(".als") !== -1) {
+        const songName = name.split("/")[1];
+        const getTrackInfo = async (file: any) => {
           try {
-            const res = await getTrackInfo(file);
+            setIsLoading(true);
+            const formData = new FormData();
+            formData.append("session", file);
 
-            let songName = file.path;
-            const songNameParsed = songName.split("/")[1];
+            const response = await fetch(`${BASE_URL}/song`, {
+              method: "POST",
+              body: formData,
+            });
 
-            const items = [
-              ...songOrder,
-              {
-                id: (Date.now() + Math.random()).toString().replace(".", ""),
-                name: songNameParsed,
-                bpm: res?.bpm,
-                originalBPM: res?.bpm,
-                time_signature_top: res?.time_signature_top,
-                time_signature_bottom: res?.time_signature_bottom,
-                track: true,
-                key: "0",
-                displayKey: displayKey,
-                duration: res?.duration,
-                clips: clips,
-                img: coverImgSrc,
-              },
-            ];
+            if (!response.ok) {
+              throw new Error("Failed to process file");
+            }
 
-            setSongOrder(items);
-          } catch (error) {
-            console.error(`Error processing file ${file.name}:`, error);
+            const trackInfoRes = await response.json();
+            return trackInfoRes;
+          } catch (e) {
+            return console.log(e);
+          } finally {
+            setIsLoading(false);
           }
-        }
-      });
+        };
 
-      Promise.all(promises)
-        .then(() => {})
-        .catch((error) => {
-          console.error("Error processing files:", error);
+        const readFileAsArrayBuffer = (file: any) => {
+          return new Promise((resolve, reject) => {
+            const fileReader = new FileReader();
+
+            fileReader.onload = (event: any) => {
+              resolve(event.target.result);
+            };
+
+            fileReader.onerror = (event) => {
+              reject(new Error("Error reading file."));
+            };
+
+            fileReader.readAsArrayBuffer(file);
+          });
+        };
+        // separate
+        let clips: any = [];
+        let trax: any = [];
+        let trax2: any = [];
+        let coverImgSrc: any;
+        const promises = acceptedFiles.map(async (file: any) => {
+          if (
+            file.path.toLowerCase().includes("/multitracks/") &&
+            file.name.toLowerCase().indexOf("click") === -1 &&
+            file.name.toLowerCase().indexOf("asd") === -1
+          ) {
+            const clipItems = [...audioClips, file];
+            setAudioClips(clipItems);
+
+            clips.push({
+              name: file.name,
+              path: file.path,
+            });
+
+            trax.push(file);
+
+            const fileContents: any = await readFileAsArrayBuffer(file);
+            const blob = new Blob([fileContents], { type: file.type });
+            const trackHref = URL.createObjectURL(blob);
+            const trackName = file.name;
+
+            trax2.push({ name: trackName, content: blob });
+          }
+
+          // handle img
+          if (file.path.toLowerCase().includes("jpg")) {
+            // Create a data URL for the image
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              coverImgSrc = e?.target?.result;
+            };
+            reader.readAsDataURL(file);
+          }
+
+          if (file.name.toLowerCase().indexOf(".als") !== -1) {
+            try {
+              const res = await getTrackInfo(file);
+
+              let songName = file.path;
+              const songNameParsed = songName.split("/")[1];
+
+              const items = [
+                ...songOrder,
+                {
+                  id: (Date.now() + Math.random()).toString().replace(".", ""),
+                  name: songNameParsed,
+                  bpm: res?.bpm,
+                  originalBPM: res?.bpm,
+                  time_signature_top: res?.time_signature_top,
+                  time_signature_bottom: res?.time_signature_bottom,
+                  track: true,
+                  key: "0",
+                  displayKey: displayKey,
+                  duration: res?.duration,
+                  clips: clips,
+                  img: coverImgSrc,
+                },
+              ];
+
+              setSongOrder(items);
+            } catch (error) {
+              console.error(`Error processing file ${file.name}:`, error);
+            }
+          }
         });
 
-      const trackItems = Array.from(multiTracks);
-      trackItems.push({ name: songName, clips: trax });
-      setMultiTracks(trackItems);
-      const trackFileArray = Array.from(trackFiles);
-      trackFileArray.push({ name: songName, clips: trax2 });
-      setTrackFiles(trackFileArray);
+        Promise.all(promises)
+          .then(() => {})
+          .catch((error) => {
+            console.error("Error processing files:", error);
+          });
 
-      if (acceptedFiles.length <= 1) {
-        window.alert("Please add the parent folder containing all the files");
-      } else {
+        const trackItems = Array.from(multiTracks);
+        trackItems.push({ name: songName, clips: trax });
+        setMultiTracks(trackItems);
+        const trackFileArray = Array.from(trackFiles);
+        trackFileArray.push({ name: songName, clips: trax2 });
+        setTrackFiles(trackFileArray);
+
+        if (acceptedFiles.length <= 1) {
+          window.alert("Please add the parent folder containing all the files");
+        } else {
+        }
+      } catch (err) {
+        setIsAlertOpen(true);
+        console.log(err);
+        setTimeout(() => {
+          setIsAlertOpen(false);
+        }, 5400);
       }
     },
     [
@@ -598,6 +632,7 @@ function FileDropzone({
       setIsLoading,
       trackFiles,
       setTrackFiles,
+      setIsAlertOpen,
     ]
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
